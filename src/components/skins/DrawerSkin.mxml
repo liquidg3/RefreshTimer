@@ -1,0 +1,231 @@
+<!--
+
+      ADOBE SYSTEMS INCORPORATED
+      Copyright 2009 Adobe Systems Incorporated
+      All Rights Reserved.
+
+      NOTICE: Adobe permits you to use, modify, and distribute this file
+      in accordance with the terms of the license agreement accompanying it.
+
+-->
+<!--- A skin class for the Spark WindowedApplication and Window containers. 
+      This class defines just a border and status bar, but no gripper button, 
+      title bar, or title bar buttons.
+      
+      <p>You can either use  system chrome, the FlexChromSkin class, or 
+      the WindowedApplicationSkin class to define the appearance of 
+      the WindowedApplication and Window containers. 
+      To use the WindowedApplicationSkin class with the WindowedApplication container, 
+      set <code>systemChrome</code> to "none" 
+      in the application's .xml file, and set the <code>skinClass</code> style to
+      spark.skins.spark.WindowedApplicationSkin. 
+      To use the WindowedApplicationSkin class with the Window container, 
+      set the <code>Window.systemChrome</code> property to "none", 
+      and set the <code>skinClass</code> style to
+      spark.skins.spark.WindowedApplicationSkin.</p>
+
+      @see spark.components.WindowedApplication
+       
+      @langversion 3.0
+      @playerversion Flash 10
+      @playerversion AIR 1.5
+      @productversion Flex 4 
+      
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabledGroup="0.5" xmlns:refreshdigital="com.refreshdigital.*" >
+     <fx:Metadata>
+		 [HostComponent("spark.components.Window")]
+	 
+	 </fx:Metadata>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<s:Parallel id="showEffect" duration="1">
+			<s:Fade alphaFrom="0.0" alphaTo="1" />
+		</s:Parallel>
+		
+	</fx:Declarations>
+
+	<fx:Script>
+		<![CDATA[
+			import components.Drawer;
+			
+			import mx.core.IVisualElement;
+			
+			import spark.components.Group;
+			import spark.components.Label;
+			import spark.primitives.Ellipse;
+			import spark.primitives.Rect;
+			
+			//close button
+			private var _closeButton:IVisualElement;
+			private function _getCloseButton():IVisualElement {
+				
+				if(!this._closeButton) {
+					var button:Group 	= new Group();
+					
+					button.width		= button.height = 15;
+					button.top			= 15;
+					button.right		= 15;
+					button.depth		= 99999;
+					
+					var me:SparkSkin		= this;
+					button.addEventListener(MouseEvent.MOUSE_DOWN,function():void {
+						var host:Drawer = hostComponent as Drawer;
+						host.hide();
+					});
+					
+					var circle:Ellipse	= new Ellipse();
+					circle.left			= 0;
+					circle.right		= 0;
+					circle.top			= 0;
+					circle.bottom		= 0;
+					circle.fill			= new SolidColor(0xFFFFFF);
+					
+					
+					button.addElement(circle);
+					
+					//create "X"
+					var rect:Rect		= new Rect();
+					rect.width			= button.width - 5;
+					rect.height			= 2;
+					rect.fill			= new SolidColor(0x000000);
+					rect.top			= button.width/2 - rect.height/2 - 3;
+					rect.left			= button.width/2 - rect.width/2 + 1;
+					rect.rotation		= 45;
+					
+					button.addElement(rect);
+					
+					rect				= new Rect();
+					rect.width			= button.width - 5;
+					rect.height			= 2;
+					rect.fill			= new SolidColor(0x000000);
+					rect.top			= button.width/2 - rect.height/2 - 3;
+					rect.left			= button.width/2 - rect.width/2 + 1;
+					rect.rotation		= -45;
+					button.addElement(rect);
+					
+					//drop in label
+					var label:Label = new Label();
+					label.top		= 1;
+					label.left 		= 0;
+					label.right		= 0;
+					
+					label.text		= "X";
+					label.setStyle('fontSize','10');
+					label.setStyle('color','#000000');
+					label.setStyle('fontWeight','bold');
+					label.setStyle('textAlign','center');
+					
+					this._closeButton = button as IVisualElement;
+					
+				}
+				
+				return this._closeButton;
+			}
+		]]>
+	</fx:Script>
+    <fx:Script fb:purpose="styling">
+	
+        /*  Define the skin elements that should not be colorized. 
+         *  For WindowedApplication, border and status bar background are colorized,
+         *  but the content area and status text are not. 
+         *  Exclude the titleBar and scroller because they are SparkSkins and we 
+         *  don't want to colorize them twice.
+         * 
+         * @langversion 3.0
+         * @playerversion Flash 10
+         * @playerversion AIR 1.5
+         * @productversion Flex 4 
+         */
+        static private const exclusions:Array = ["backgroundRect", "contentGroup", "statusText", "grippie"];
+        
+        /**
+         * @private
+         */
+        override public function get colorizeExclusions():Array {return exclusions;}
+        
+        /**
+         * @private
+         */
+		protected var _hasFocus:Boolean = true;
+        override protected function initializationComplete():void
+        {
+			
+            useChromeColor = true;
+            super.initializationComplete();
+			
+			this.addElementAt(this._getCloseButton(),0);
+			
+        } 
+        
+        /**
+         *  @private
+         */
+        override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void
+        {			
+            backgroundFill.color = getStyle("backgroundColor");
+            backgroundFill.alpha = (true /*this.currentState == 'normal'*/) ? getStyle("backgroundAlpha") : 0.5;
+			
+			gripper.visible = hostComponent.resizable;
+			
+            super.updateDisplayList(unscaledWidth, unscaledHeight);
+        }
+		
+		
+		
+    </fx:Script>
+    
+     <s:states>
+        <s:State name="normal" />
+        <s:State name="disabled" stateGroups="disabledGroup" />
+        <s:State name="normalAndInactive" stateGroups="inactiveGroup" />
+        <s:State name="disabledAndInactive" stateGroups="disabledGroup, inactiveGroup" />
+    </s:states>
+
+    <!-- layer 1: background fill -->
+    <!--- Defines the background color of the skin. -->
+    <s:Rect id="backgroundRect" radiusX="5" left="10" right="10" top="10" bottom="10" >
+		
+		<s:stroke>
+			<s:SolidColorStroke color="#ffffff" caps="none" joints="miter" miterLimit="4" weight="2"/>
+		</s:stroke>
+		
+        <s:fill>
+            <s:SolidColor id="backgroundFill" />
+        </s:fill>
+		
+		<s:filters>
+			<s:DropShadowFilter distance="0" alpha=".9" color="#000" blurX="10" blurY="10" />
+		</s:filters>
+		
+    </s:Rect>
+	
+	<!-- mask -->
+	<s:Group id="contentMask" left="12" right="12" top="12" bottom="12">
+		<s:Rect radiusX="5" left="0" right="0" top="0" bottom="0">
+			<s:fill>
+				<s:SolidColor color="#000" />
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+
+	<!-- Content -->
+	<s:Group id="contentGroup" mask="{contentMask}" left="30" top="30" right="30" bottom="30" />
+	
+	
+
+	<refreshdigital:ButtonIcon 
+		icon="@Embed(source='assets/images/grippieAngled.png')" 
+		id="gripper" 
+		width="20" 
+		height="20" 
+		label="" 
+		right="13" 
+		backgroundAlphaOver="0" 
+		backgroundAlphaDown="0"
+		bottom="10" />
+	
+</s:SparkSkin>

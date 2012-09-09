@@ -1,0 +1,605 @@
+Received: (qmail 11549 invoked from network); 28 Mar 2010 17:32:19 -0000
+Received: from unknown (HELO m1pismtp01-023.prod.mesa1.secureserver.net) ([10.8.12.26])
+          (envelope-sender <SRS0=mN80=LI=adobeinfo.com=adobe+15660_162P0O0P36249Q733@bounce.secureserver.net>)
+          by p3plsmtp05-02.prod.phx3.secureserver.net (qmail-1.03) with SMTP
+          for <taylor@liquidfire.com>; 28 Mar 2010 17:32:19 -0000
+X-IronPort-Anti-Spam-Result: AqgBAG8vr0thSocgmWdsb2JhbACBRpkNAVQVAQEBAQEICwoHESKvKgGNOgEEglmCKA
+Received: from p3plsmtp06-02.prod.phx3.secureserver.net ([97.74.135.32])
+  by m1pismtp01-023.prod.mesa1.secureserver.net with ESMTP; 28 Mar 2010 10:32:19 -0700
+Received: (qmail 24109 invoked by uid 1000); 28 Mar 2010 17:32:18 -0000
+Delivered-To: taylor@liquidfiredesign.com
+Received: (qmail 24107 invoked from network); 28 Mar 2010 17:32:18 -0000
+Received: from unknown (HELO p3pismtp01-001.prod.phx3.secureserver.net) ([10.6.12.2])
+          (envelope-sender <adobe+15660_162P0O0P36249Q733@adobeinfo.com>)
+          by p3plsmtp06-02.prod.phx3.secureserver.net (qmail-1.03) with SMTP
+          for <taylor@liquidfiredesign.com>; 28 Mar 2010 17:32:18 -0000
+X-IronPort-Anti-Spam-Result: AqgBAPcur0s/53+mmWdsb2JhbACBRpkNAVQVAQEBAQEICwoHESKvMQGNOgEEglmCKA
+Received: from adob.mx.infoyouaskedfor.com ([63.231.127.166])
+  by p3pismtp01-002.prod.phx3.secureserver.net with ESMTP; 28 Mar 2010 10:32:18 -0700
+Received: from nano.leadertech.com (nano.leadertech.com [207.66.2.56])
+	by adob.mx.infoyouaskedfor.com (Postfix) with ESMTP id 00A22168043
+	for <taylor@liquidfiredesign.com>; Sun, 28 Mar 2010 11:32:16 -0600 (MDT)
+X-DomainKeys: Sendmail DomainKeys Filter v1.0.2 adob.mx.infoyouaskedfor.com 00A22168043
+DomainKey-Signature: a=rsa-sha1; s=200907; d=adobeinfo.com; c=simple; q=dns;
+	h=x-dkim:dkim-signature:content-type:
+	content-transfer-encoding:mime-version:from:to:subject:message-id:
+	x-lt-bounce-hook:list-unsubscribe;
+	b=RmaGpb7tFQ2ag+yK6DGqRotitt4jn7Biv25JI31fe5cAXnSOW+EK9we32+kqKM5zk
+	39FvWrpJjs4YHHXYmhgC+BzCoGo2kJKjCM+tYtskRAaKb7YbVNJt93shsWYuh+T/Ps5
+	Ednn6Xq/Usnj8sLdi7kHVl3SS7R6iN95akkDzVI=
+X-DKIM: Sendmail DKIM Filter v2.8.3 adob.mx.infoyouaskedfor.com 00A22168043
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=adobeinfo.com;
+	s=200907; t=1269797537;
+	bh=R43+1yVlMqjxgdMLROhlZZX5XoIs+1+hSIZ1AsxINSc=; l=23871;
+	h=Content-Type:Content-Transfer-Encoding:MIME-Version:From:To:
+	 Subject:Message-ID:List-Unsubscribe;
+	b=H9mR9odiIPCnh4loACGuRwhYiJK/lS1edO8yl0BbkSp1UZRoJBLBxQQnGr90/WYbQ
+	 r7VxF7nnsNZbJXwtgWOV9Y+d7cpyVNG6r63xaxk1sqQxvlZvUx4aXAXajSPBZn0ESb
+	 Q7+PjVp6hDXUG1XuEGDdcaPVDN7tmJdj2fV2GoLo=
+Content-Type: multipart/alternative;
+ boundary="----------=_1269797536-20932-223"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+From: Adobe Systems Inc. <adobe@adobeinfo.com>
+To: taylor@liquidfiredesign.com
+Subject: Flex Builder Trial: Build Your Own Chat Application with Flex and
+ Blaze DS
+Message-ID: <15660mm.120032973.36420932.4baf92a0@adobeinfo.com>
+X-LT-Bounce-Hook: EPVQ:14877775:15660:gnlybe@yvdhvqsverqrfvta.pbz
+List-Unsubscribe: <mailto:adobe+15660_162P0O0P36249Q733@adobeinfo.com?subject=unsubscribe>
+X-Nonspam: None
+
+This is a multi-part message in MIME format...
+
+------------=_1269797536-20932-223
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+---------------------------------------------------------------------------=
+-----
+ADOBE(r) FLEX(r) BUILDER(tm) 3
+---------------------------------------------------------------------------=
+-----
+
+Flex Builder 3 Trial: Start building rich Internet applications
+
+---------------------------------------------------------------------------=
+-----
+THANKS FOR YOUR CONTINUED INTEREST IN ADOBE FLEX BUILDER
+---------------------------------------------------------------------------=
+-----
+
+As part of your trial, we are sending you these e-mails on a regular basis.=
+ This e-mail highlights Activa Live Chat, an Adobe Flex based live chat app=
+lication, and explains how to build your own chat application using Adobe F=
+lex and Adobe Blaze DS.
+
+Don't forget to check out the Flex Developer Center for in-depth articles a=
+nd tutorials about Adobe Flex.
+http://www.adobeinfo.com/r.cgi?=3Dm139226_120032973
+
+---------------------------------------------------------------------------=
+-----
+GET INSPIRED BY ACTIVA LIVE CHAT
+---------------------------------------------------------------------------=
+-----
+
+Activa Live Chat allows website owners to easily provide live, online suppo=
+rt to visitors and customers through instant, text-based chatting. Activa L=
+ive Chat uses a Flex based UI for website visitors as well as chat operator=
+s, and PHP for the chat services backend
+http://www.adobeinfo.com/r.cgi?=3Dm139227_120032973
+
+---------------------------------------------------------------------------=
+-----
+BUILD YOUR OWN CHAT APPLICATION
+---------------------------------------------------------------------------=
+-----
+
+Flex supports publish and subscribe messaging through the open source Blaze=
+DS Message Service. The Message Service manages a set of destinations that =
+Flex clients can publish and subscribe to. Flex provides two components, Pr=
+oducer and Consumer, that you use to publish and subscribe to a destination=
+. To subscribe to a destination, you use the subscribe() method of the Cons=
+umer class. When a message is published to a destination to which you subsc=
+ribe, the message event is triggered on the Consumer.
+
+Using the BlazeDS publish/subscribe capability is easy. Here is an example =
+of a simple chat application:
+
+<?xml version=3D"1.0" encoding=3D"utf-8"?>
+    <mx:Application xmlns:mx=3D"http://www.adobe.com/2006/mxml"
+       creationComplete=3D"consumer.subscribe()">
+       <mx:Script>
+            <![CDATA[
+=20=20=20=20=20=20=20=20=20=20=20=20
+                import mx.messaging.messages.AsyncMessage;
+                import mx.messaging.messages.IMessage;
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+                private function send():void
+                {
+                    var message:IMessage =3D new AsyncMessage();
+                    message.body.chatMessage =3D msg.text;
+                    producer.send(message);
+                    msg.text =3D "";
+                }
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20
+                private function messageHandler(message:IMessage):void
+                {
+                    log.text +=3D message.body.chatMessage + "\n";=20=20=20=
+=20
+                }
+            ]]>
+    </mx:Script>
+    <mx:Producer id=3D"producer" destination=3D"chat"/>
+    <mx:Consumer id=3D"consumer" destination=3D"chat" message=3D"messageHan=
+dler(event.message)"/>
+    <mx:Panel title=3D"Chat" width=3D"100%" height=3D"100%">
+        <mx:TextArea id=3D"log" width=3D"100%" height=3D"100%"/>
+        <mx:ControlBar>
+            <mx:TextInput id=3D"msg" width=3D"100%" enter=3D"send()"/>
+            <mx:Button label=3D"Send" click=3D"send()"/>=20
+        </mx:ControlBar>
+    </mx:Panel>
+</mx:Application>
+
+Messaging destinations are configured in a messaging-config.xml in the root=
+ of your Flex application. A key element of a destination configuration is =
+the channel used to exchange data between the client and the server. Using =
+BlazeDS, a messaging destination typically uses a streaming or a polling ch=
+annel.
+
+- Using a streaming channel, the server response is left open until the cha=
+nnel connection is closed, allowing the server to send down incremental chu=
+nks of data to the client. HTTP connections are not duplex. This means that=
+ a single streaming AMF or HTTP channel actually requires two browser HTTP =
+connections in order to send data in both directions. One for the streamed =
+response from the server to the client that the channel hangs on to, and a =
+second transient connection, drawn from the browser pool only when data nee=
+ds to be sent to the server. This second transient connection is immediatel=
+y released back to the browser's connection pool.
+
+ -A polling channel can be configured with a simple interval or with a seve=
+r wait if data is not immediately available (long polling). In either case,=
+ each poll response completes the request. Browser HTTP 1.1 connections are=
+ persistent by default, so the browser will likely recycle existing HTTP co=
+nnections to send subsequent poll requests, which lowers the overhead for p=
+olling.
+
+---------------------------------------------------------------------------=
+-----
+STAY UP TO DATE
+---------------------------------------------------------------------------=
+-----
+
+The next e-mail contains helpful information about debugging your applicati=
+on. Get a head start by browsing the Flex 3 Getting Started Wiki.
+http://www.adobeinfo.com/r.cgi?=3Dm139228_120032973
+
+Sincerely,
+
+The Adobe Flex Team
+
+---------------------------------------------------------------------------=
+-----
+MORE RESOURCES
+---------------------------------------------------------------------------=
+-----
+
+Subscribe to the "News Flash" Newsletter
+http://www.adobeinfo.com/r.cgi?=3Dm272809_120032973
+
+Flex Applications
+- Flex showcase
+  http://www.adobeinfo.com/r.cgi?=3Dm139230_120032973
+- Sample applications
+  http://www.adobeinfo.com/r.cgi?=3Dm139229_120032973
+
+Learn Flex
+- Flex books
+  http://www.adobeinfo.com/r.cgi?=3Dm139233_120032973
+=20=20
+Training
+- Flex Video Training
+  http://www.adobeinfo.com/r.cgi?=3Dm272965_120032973
+- lynda.com
+  http://www.adobeinfo.com/r.cgi?=3Dm139235_120032973
+- Total Training
+  http://www.adobeinfo.com/r.cgi?=3Dm139234_120032973
+
+  Free Online Support
+- Flex coders e-mail list
+  http://www.adobeinfo.com/r.cgi?=3Dm139231_120032973
+- Flex forums
+  http://www.adobeinfo.com/r.cgi?=3Dm139232_120032973
+- Flex user groups
+  http://www.adobeinfo.com/r.cgi?=3Dm139236_120032973
+
+Buy Adobe Flex Builder
+http://www.adobeinfo.com/r.cgi?=3Dm139237_120032973
+
+Become a fan of Adobe Flex on Facebook
+http://www.adobeinfo.com/r.cgi?=3Dm384088_120032973
+
+Don't miss MAX 2009, Oct. 4-7 Los Angeles, CA
+http://www.adobeinfo.com/r.cgi?=3Dm384087_120032973
+
+
+******************************************************************
+
+Adobe, the Adobe logo, Flex, and Flex Builder are either
+registered trademarks or trademarks of Adobe Systems Incorporated
+in the United States and/or other countries. All other trademarks
+are the property of their respective owners.
+
+Copyright 2008 Adobe Systems Incorporated. All rights reserved.
+
+This is an advertising message from Adobe Systems Incorporated,
+its affiliates and agents ("Adobe"), 345 Park Avenue, San Jose, CA
+95110 USA. If you'd prefer not to receive e-mail like this from
+Adobe in the future, please click here
+http://www.adobeinfo.com/r.cgi?=3Dm139337_120032973&email=3Dtaylor%40liquid=
+firedesign.com
+to unsubscribe or send an e-mail to
+unsubscribe-na@adobesystems.com.
+Alternatively, you may mail your unsubscribe request to:
+
+UNSUBSCRIBE
+Adobe Systems Incorporated
+P.O. Box 2205
+Beaverton, OR 97075
+
+Your privacy is important to us. Please review Adobe's online
+Privacy Policy by clicking here:
+http://www.adobeinfo.com/r.cgi?=3Dm139238_120032973
+
+This is an auto-generated e-mail. Please do not respond to this
+message for customer service issues. Please visit our website at
+http://www.adobeinfo.com/r.cgi?=3Dm139239_120032973
+for more information.=
+
+------------=_1269797536-20932-223
+Content-Type: text/html; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+	<head>
+		<meta http-equiv=3D"content-type" content=3D"text/html;charset=3Diso-8859=
+-1">
+		<meta name=3D"generator" content=3D"Adobe GoLive">
+		<title>Adobe&reg; Flex&trade; 3 Trial: Get inspired by Activa Live Chat!<=
+/title>
+	</head>
+
+	<body style=3D"margin:0;padding:20px" bgcolor=3D"#ffffff" link=3D"blue" vl=
+ink=3D"#996666">
+		<div align=3D"center">
+			<p style=3D"font-size:.65em;font-family:Verdana, Arial, Helvetica, sans-=
+serif;color:#444666;margin:0 0 1em 0"><span >If this message is not display=
+ing properly, <a target=3D"_blank" style=3D"color:#333" href=3D"http://www.=
+adobeinfo.com/r.cgi?=3Dm139240_120032973&MMID=3D120032973&MLID=3D15660&EMAL=
+=3Dtaylor%40liquidfiredesign.com">click here</a> to launch your browser. </=
+span></p>
+			<!--table-->
+			<table width=3D"80%" border=3D"0" cellspacing=3D"0" cellpadding=3D"0">
+				<tr>
+					<td width=3D"71%"></td>
+					<td width=3D"29%"></td>
+				</tr>
+				<tr>
+					<td colspan=3D"2"><img src=3D"http://www.adobeinfo.com/managed/adob/at=
+dl/15660/7/images/top_noborders.gif" alt=3D"Adobe&reg; logo" border=3D"0"><=
+/td>
+				</tr>
+				<tr>
+					<td colspan=3D"2"><img src=3D"http://www.adobeinfo.com/managed/adob/at=
+dl/15660/7/images/hero_box.jpg" alt=3D"Flex Builder 3 Trial: Start building=
+ rich Internet applications"></td>
+				</tr>
+				<tr valign=3D"top">
+					<td width=3D"71%">
+						<div style=3D"margin:0 20px;line-height: 1.5;font-size:75%;font-famil=
+y:Verdana, Arial, Helvetica, sans-serif;color:#444">
+=09=09=09=09=09=09=09
+						   <table border=3D"0" cellspacing=3D"0" cellpadding=3D"0">
+						    <tr>
+							  <td>
+
+<h1 style=3D"margin:0; font-size:1.33em; font-family:Verdana, Arial, Helvet=
+ica; color:#000;">
+Thanks for your continued interest in Adobe<span style=3D"font-size:0.5em;v=
+ertical-align:super">&reg;</span> Flex<span style=3D"font-size:0.5em;vertic=
+al-align:super">&reg;</span> Builder&trade;</h1>
+
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">As part=
+ of your trial, we are sending you these e-mails on a regular basis. This e=
+-mail highlights Activa Live Chat, an Adobe Flex based live chat applicatio=
+n, and explains how to build your own chat application using Adobe Flex and=
+ Adobe Blaze DS.</span></p>
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">Don't f=
+orget to check out the <a target=3D"_blank" style=3D"color:#333" href=3D"ht=
+tp://www.adobeinfo.com/r.cgi?=3Dm139226_120032973">Flex Developer Center</a=
+> for in-depth articles and tutorials about Adobe Flex.</span></p>
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20
+							  </td>
+							</tr>
+						    <tr>
+							  <td>=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+
+							<h2 style=3D"margin:1em 0 .25em;font-size:1.1em;font-family:Verdana,=
+ Arial, Helvetica;color:#000">Get inspired by Activa Live Chat</h2>
+							  </td>
+							</tr>=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20=20=20=20
+						    <tr>
+							  <td>=20
+							   <table border=3D"0" cellspacing=3D"0" cellpadding=3D"0" width=3D"=
+100%">
+								<tr>
+							<td vAlign=3D"top" width=3D"169"><img style=3D"float:left;margin:0 2=
+0px 20px 0" src=3D"http://www.adobeinfo.com/managed/adob/atdl/15660/7/image=
+s/activalive.jpg" alt=3D"Activa Live Chat" height=3D"125" width=3D"169" ali=
+gn=3D"left"></td>=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20
+							<td style=3D"padding-left:5px"><span style=3D"line-height: 1.5;font-=
+size:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444"><a =
+target=3D"_blank" style=3D"color:#333" href=3D"http://www.adobeinfo.com/r.c=
+gi?=3Dm139227_120032973">Activa Live Chat</a> allows website owners to easi=
+ly provide live, online support to visitors and customers through instant, =
+text-based chatting. Activa Live Chat uses a Flex based UI for website visi=
+tors as well as chat operators, and PHP for the chat services backend.</spa=
+n></td>
+								</tr>
+							   </table>
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20
+							  </td>
+							</tr>
+=09=09=09=09=09=09=09
+						    <tr>
+							  <td>
+							<h2 style=3D"margin:1em 0 -.25em;font-size:1.1em;font-family:Verdana=
+, Arial, Helvetica;color:#000">Build your own chat application</h2>
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">Flex su=
+pports publish and subscribe messaging through the open source BlazeDS Mess=
+age Service. The Message Service manages a set of destinations that Flex cl=
+ients can publish and subscribe to. Flex provides two components, Producer =
+and Consumer, that you use to publish and subscribe to a destination. To su=
+bscribe to a destination, you use the subscribe() method of the Consumer cl=
+ass. When a message is published to a destination to which you subscribe, t=
+he <strong>message</strong> event is triggered on the Consumer.</span></p>
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">Using t=
+he BlazeDS publish/subscribe capability is easy. Here is an example of a si=
+mple chat application:</span></p>
+							<div style=3D"font:1em%/1.4 'Courier New', Courier, Monaco, monospac=
+e;color:#444">
+								<p style=3D"margin:.5em 0"><code>
+										<pre>&lt;?xml version=3D&quot;1.0&quot; encoding=3D&quot;utf-8&qu=
+ot;?&gt;
+    &lt;mx:Application xmlns:mx=3D&quot;http://www.adobe.com/2006/mxml&quot;
+       creationComplete=3D&quot;consumer.subscribe()&quot;&gt;
+       &lt;mx:Script&gt;
+            &lt;![CDATA[
+=20=20=20=20=20=20=20=20=20=20=20=20
+                import mx.messaging.messages.AsyncMessage;
+                import mx.messaging.messages.IMessage;
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+                private function send():void
+                {
+                    var message:IMessage =3D new AsyncMessage();
+                    message.body.chatMessage =3D msg.text;
+                    producer.send(message);
+                    msg.text =3D &quot;&quot;;
+                }
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20
+                private function messageHandler(message:IMessage):void
+                {
+                    log.text +=3D message.body.chatMessage + &quot;\n&quot;=
+;=20=20=20=20
+                }
+            ]]&gt;
+    &lt;/mx:Script&gt;
+    &lt;mx:Producer id=3D&quot;producer&quot; destination=3D&quot;chat&quot=
+;/&gt;
+    &lt;mx:Consumer id=3D&quot;consumer&quot; destination=3D&quot;chat&quot=
+; message=3D&quot;messageHandler(event.message)&quot;/&gt;
+    &lt;mx:Panel title=3D&quot;Chat&quot; width=3D&quot;100%&quot; height=
+=3D&quot;100%&quot;&gt;
+        &lt;mx:TextArea id=3D&quot;log&quot; width=3D&quot;100%&quot; heigh=
+t=3D&quot;100%&quot;/&gt;
+        &lt;mx:ControlBar&gt;
+            &lt;mx:TextInput id=3D&quot;msg&quot; width=3D&quot;100%&quot; =
+enter=3D&quot;send()&quot;/&gt;
+            &lt;mx:Button label=3D&quot;Send&quot; click=3D&quot;send()&quo=
+t;/&gt;=20
+        &lt;/mx:ControlBar&gt;
+    &lt;/mx:Panel&gt;
+&lt;/mx:Application&gt;</pre>
+									</code></p>
+							</div>
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">Messagi=
+ng destinations are configured in a messaging-config.xml in the root of you=
+r Flex application. A key element of a destination configuration is the cha=
+nnel used to exchange data between the client and the server. Using BlazeDS=
+, a messaging destination typically uses a streaming or a polling channel.<=
+/span></p>
+							<ul style=3D"margin:0 0 0 1.5em;padding:0"><span style=3D"line-heigh=
+t: 1.5;font-size:12px;font-family:Verdana, Arial, Helvetica, sans-serif;col=
+or:#444">
+								<li style=3D"margin:0 0 .33em">Using a streaming channel, the serve=
+r response is left open until the channel connection is closed, allowing th=
+e server to send down incremental chunks of data to the client. HTTP connec=
+tions are not duplex. This means that a single streaming AMF or HTTP channe=
+l actually requires two browser HTTP connections in order to send data in b=
+oth directions. One for the streamed response from the server to the client=
+ that the channel hangs on to, and a second transient connection, drawn fro=
+m the browser pool only when data needs to be sent to the server. This seco=
+nd transient connection is immediately released back to the browser&rsquo;s=
+ connection pool.</li>
+								<li style=3D"margin:0 0 .33em">A polling channel can be configured =
+with a simple interval or with a sever wait if data is not immediately avai=
+lable (long polling). In either case, each poll response completes the requ=
+est. Browser HTTP 1.1 connections are persistent by default, so the browser=
+ will likely recycle existing HTTP connections to send subsequent poll requ=
+ests, which lowers the overhead for polling.</li>
+							</span></ul>
+							  </td>
+							</tr>
+
+						    <tr>
+							  <td>
+							<h2 style=3D"margin:1em 0 -.25em;font-size:1.1em;font-family:Verdana=
+, Arial, Helvetica;color:#000">Stay up to date</h2>
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">The nex=
+t e-mail contains helpful information about debugging your application. Get=
+ a head start by browsing the <a target=3D"_blank" style=3D"color:#333" hre=
+f=3D"http://www.adobeinfo.com/r.cgi?=3Dm139228_120032973">Flex 3 Getting St=
+arted Wiki</a>.</span></p>
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">Sincere=
+ly,</span></p>
+							<p style=3D"margin:.5em 0"><span style=3D"line-height: 1.5;font-size=
+:12px;font-family:Verdana, Arial, Helvetica, sans-serif;color:#444">The Ado=
+be Flex Team</span></p>
+						  </table>
+						</div>
+					</td>
+					<td width=3D"29%">
+						<div align=3D"right">
+							<table border=3D"0" cellspacing=3D"0" cellpadding=3D"0">
+								<tr>
+									<td>
+										<div style=3D"margin:0 20px;font-size:75%;font-family:Verdana, Ar=
+ial, Helvetica, sans-serif;color:#444">
+	<h3 style=3D"margin:1.25em 0; font-size:1em; color:#c00;"><a style=3D"colo=
+r:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm272809_120032973" target=
+=3D"_blank">Subscribe to the &quot;News Flash&quot; Newsletter </a></h3>
+											<h3 style=3D"margin:1.25em 0 .25em; font-size:1em; color:#000;">=
+Flex Applications</h3>
+											<div style=3D"margin:0 0 .67em;padding:0;list-style:none">
+												<div style=3D"margin:0 0 .33em"><a target=3D"_blank" style=3D"c=
+olor:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm139230_120032973">Fle=
+x showcase</a></div>
+				  <div style=3D"margin:0 0 .33em">
+												  <a target=3D"_blank" style=3D"color:#c00" href=3D"http://www.=
+adobeinfo.com/r.cgi?=3Dm139229_120032973">Sample applications</a></div>
+								    </div>
+											<h3 style=3D"margin:1.25em 0 .25em; font-size:1em; color:#000;">=
+Learn Flex</h3>
+												  <div style=3D"margin:0;margin-bottom:1.25em;"><a target=3D"_b=
+lank" style=3D"color:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm13923=
+3_120032973">Flex Books</a></div>
+=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=09=20=20
+											<h3 style=3D"margin:1.25em 0 .25em; font-size:1em; color:#000; m=
+argin-top: 0;">Training</h3>
+											<div style=3D"margin:0 0 .67em;padding:0;list-style:none">
+                                              <div style=3D"margin:0 0 .33e=
+m"><a target=3D"_blank" style=3D"color:#c00" href=3D"http://www.adobeinfo.c=
+om/r.cgi?=3Dm272965_120032973" target=3D"_blank">Free Video Training </a></=
+div>
+                                              <div style=3D"margin:0 0 .33e=
+m"><a target=3D"_blank" style=3D"color:#c00" href=3D"http://www.adobeinfo.c=
+om/r.cgi?=3Dm139235_120032973">Lynda.com</a></div>
+											  <div style=3D"margin:0 0 .33em"><a target=3D"_blank" style=3D"=
+color:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm139234_120032973">To=
+tal Training</a></div>
+										  </div>
+											<h3 style=3D"margin:1.25em 0 .25em; font-size:1em; color:#000;">=
+Free Online Support</h3>
+											<div style=3D"margin:0 0 .33em"><a target=3D"_blank" style=3D"co=
+lor:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm139231_120032973">Flex=
+ coders e-mail list</a></div>
+												<div style=3D"margin:0 0 .33em"><a target=3D"_blank" style=3D"c=
+olor:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm139232_120032973">Fle=
+x forums</a></div>
+												<div style=3D"margin:0 0 .33em;margin-bottom:1.25em;">
+												  <p style=3D"margin-top: 0;"><a target=3D"_blank" style=3D"col=
+or:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm139236_120032973">Flex =
+user groups</a></p>
+											<!--	  <p style=3D"margin-bottom: 0;"><span style=3D"margin:1.25=
+em 0; font-size:1em; color:#c00; margin-bottom: 0;"><strong><a style=3D"col=
+or:#c00" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm190628_120032973" targe=
+t=3D"_blank"><br>
+</a></strong></span></p>     -->
+												  </div>
+=09=09=09=09=09=09=09=09=09=09
+<h3 style=3D"margin:1.25em 0; font-size:1em; margin-top: 0; margin-bottom: =
+0;"><a target=3D"_blank" style=3D"color:#c00" href=3D"http://www.adobeinfo.=
+com/r.cgi?=3Dm139237_120032973">Buy Adobe Flex Builder</a></h3>
+<p style=3D"margin:1.25em 0; font-size:1em;"><a href=3D"http://www.adobeinf=
+o.com/r.cgi?=3Dm384088_120032973" target=3D"_blank" style=3D"color:#c00">Be=
+come a fan of Adobe Flex on Facebook</a></p>
+<p style=3D"margin:1.25em 0; font-size:1em;"><a href=3D"http://www.adobeinf=
+o.com/r.cgi?=3Dm384087_120032973" target=3D"_blank" style=3D"color:#c00">Do=
+n't miss MAX 2009, Oct. 4-7 Los Angeles, CA</a></p>												</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan=3D"2">
+						<div style=3D"margin:20px;font-size:64%;font-family:Verdana, Arial, H=
+elvetica, sans-serif;color:#aaa">
+							<p>
+
+
+
+
+Adobe, the Adobe logo, Flex, and Flex Builder are either registered tradema=
+rks or trademarks of Adobe Systems Incorporated in the United States and/or=
+ other countries. All other trademarks are the property of their respective=
+ owners.</p>
+							<p>&copy; Copyright 2008 Adobe Systems Incorporated. All rights rese=
+rved.</p>
+							<p style=3D"margin:0 0 1em">This is an advertising message from Adob=
+e Systems Incorporated, its affiliates and agents (&quot;Adobe&quot;), 345 =
+Park Avenue, San Jose, CA 95110 USA. If you'd prefer not to receive e-mail =
+like this from Adobe in the future, please <a target=3D"_blank" style=3D"co=
+lor:#999" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm139337_120032973&email=
+=3Dtaylor%40liquidfiredesign.com">click here to unsubscribe</a> or send an =
+e-mail to <a style=3D"color:#999" href=3D"mailto:unsubscribe-na@adobesystem=
+s.com">unsubscribe-na@adobesystems.com</a>. Alternatively, you may mail you=
+r unsubscribe request to:</p>
+							<p style=3D"margin:0 0 1em">UNSUBSCRIBE<br>
+								Adobe Systems Incorporated<br>
+								P.O. Box 2205<br>
+								Beaverton, OR 97075</p>
+							<p style=3D"margin:0 0 1em">Your privacy is important to us. Please =
+review Adobe's online Privacy Policy by clicking here: <a target=3D"_blank"=
+ style=3D"color:#999" href=3D"http://www.adobeinfo.com/r.cgi?=3Dm139238_120=
+032973">www.adobe.com/misc/privacy.html</a></p>
+							<p style=3D"margin:0 0 1em">This is an auto-generated e-mail. Please=
+ do not respond to this message for customer service issues. Please visit o=
+ur website at <a target=3D"_blank" style=3D"color:#999" href=3D"http://www.=
+adobeinfo.com/r.cgi?=3Dm139239_120032973">www.adobe.com/support</a> for mor=
+e information.</p>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+=09
+<!-- OPENEDEMAILS -->
+<img src=3D"http://www.adobeinfo.com/o.cgi?=3Dm15660_120032973" alt=3D"">
+</body>
+=20=20=20=20
+</html>=
+
+------------=_1269797536-20932-223--
+

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:s="library://ns.adobe.com/flex/spark" xmlns:fx="http://ns.adobe.com/mxml/2009">
+	<fx:Metadata>[HostComponent("spark.components.Button")]</fx:Metadata>
+	<s:states>
+		<s:State name="up"/>
+		<s:State name="over"/>
+		<s:State name="down"/>
+		<s:State name="disabled"/>
+	</s:states>
+	<s:Rect width="100%" id="rect1" top="0" left="0" height="5">
+		
+		<s:fill>
+			<s:SolidColor color="#676767" />
+		</s:fill>
+		<s:fill.disabled>
+			<s:SolidColor color="#cccccc"/>
+		</s:fill.disabled>
+	</s:Rect>
+	
+	
+</s:Skin>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="true" 
+				xmlns:local="*">
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	
+	<s:Rect left="0" right="0" top="0" bottom="0">
+		<s:fill>
+			<s:SolidColor color.hovered="#000000" color.selected="#666666" alpha.hovered=".5" alpha.normal="0"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:CheckBox top="4" left="4" label="" id="checkBox" selected="{data.checked}"/>
+	<s:Label left="30" paddingBottom="10" paddingTop="10" text="{data.heading}" />
+	
+	<local:ProgressSwf width="10" left="13" top="13" visible="{data.isProgressVisible}" height="10" />
+	
+</s:ItemRenderer>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" 
+					   xmlns:ai="http://ns.adobe.com/ai/2008" 
+					   visible="false" 
+					   frameRate="30" 
+					   backgroundFrameRate="10"
+					   backgroundAlpha="0.0" 
+					   showStatusBar="false"
+					   applicationComplete="initApp();">
+
+	<fx:Style source="/css/global.css"/>
+
+	
+	<fx:Script>
+		<![CDATA[
+			import com.refreshdigital.Util;
+			
+			import components.TimerBar;
+	
+			
+			//this is the selected object we will post time
+			//public var selectedRemoteObject:Remote	= null;
+			
+			
+			
+			//the dual button that toggles tickets and checklists int he tasks window
+			//private var _checklistToggleButton:DualButton	= null;
+			
+			
+			
+			public function initApp():void {
+
+				//create timer button app
+				var timer:TimerBar = new TimerBar();
+				timer.open();
+				
+				Util.mainWindow = this;
+
+			}
+			
+
+		]]>
+	</fx:Script>
+
+</s:WindowedApplication>

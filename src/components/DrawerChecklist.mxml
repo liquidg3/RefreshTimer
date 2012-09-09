@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:DrawerList xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" 
+					   xmlns:components="components.*" 
+					   xmlns:local="*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	
+	<s:Scroller id="mainScroller" width="100%" height="100%">
+		
+		<s:Group>
+			
+			<s:List id="mainList" borderAlpha="0" contentBackgroundAlpha="0" dataProvider="{items}" styleName="browseList">
+				<s:itemRenderer>
+					<fx:Component>
+						<s:ItemRenderer>
+							
+							<s:states>
+								<s:State name="normal" />
+								<s:State name="hovered" />
+								<s:State name="selected" />
+							</s:states>
+							
+							<s:Rect left="0" right="0" top="0" bottom="0">
+								<s:fill>
+									<s:SolidColor color.hovered="#000000" color.selected="#000000" alpha.hovered=".5" alpha.normal="0"/>
+								</s:fill>
+							</s:Rect>
+							
+							<s:CheckBox top="4" left="4" label="" id="checkBox" selected="{data.checked}"/>
+							<s:Label left="30" paddingBottom="10" paddingTop="10" text="{data.heading}" />
+
+							<local:ProgressSwf width="10" left="13" top="13" visible="{data.isProgressVisible}" height="10" />
+
+						</s:ItemRenderer>
+					</fx:Component>
+				</s:itemRenderer>
+			</s:List>
+			
+		</s:Group>
+		
+	</s:Scroller>
+	
+	
+	
+	<s:Label left="0" bottom="-20" text="{searchString}" />
+	
+</components:DrawerList>

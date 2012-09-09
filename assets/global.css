@@ -1,0 +1,94 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+@font-face {
+	src: url("/assets/UbuntuTitling-Bold.ttf");
+	fontFamily: Ubuntu;
+}
+
+global
+{
+	font-family: "Ubuntu";
+	font-color: "#666666";
+	contentBackgroundColor: #000000;
+	contentBackgroundAlpha: 0.75;
+	font-family: "Arial";
+	fontSize: 12;
+}
+s|Button
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.ButtonDefault");
+	marginLeft:0;
+	paddingLeft:0;
+	marginRight:0;
+	paddingRight:0;
+}
+s|List.menuList
+{
+	skinClass: ClassReference("components.DataList2");
+	
+}
+s|List.defaultList
+{
+	skinClass: ClassReference("components.DataList1");
+	
+}
+s|HSlider
+{
+	skinClass: ClassReference("components.HorizontalSlider1");
+}
+s|VSlider
+{
+	skinClass: ClassReference("components.VerticalSlider1");
+}
+s|ToggleButton
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.ToggleButton1");
+	
+}
+s|CheckBox
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.Checkbox1");
+}	
+
+
+s|HScrollBar
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.HorizontalScrollbar1");
+}
+
+s|VScrollBar
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.VerticalScrollbar5");
+}	
+
+s|RadioButton
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.RadioButton1");
+}
+
+s|TextInput {
+	skinClass: ClassReference("components.TextInput1");
+}
+
+s|DropDownList {
+	color:#000000;
+}
+
+/**
+ * Project specific
+ */
+.timerBar {
+	skinClass: ClassReference("components.TimerBar");
+}
+
+s|NavigatorContent {
+	background-color:#CCCCCC;	
+}

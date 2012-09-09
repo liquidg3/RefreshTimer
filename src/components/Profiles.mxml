@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:DrawerGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="400"
+		 minWidth="370"
+		 height="200"
+		 maxHeight="190"
+		 resizable="true"
+		 xmlns:components="components.*">
+
+	<fx:Declarations>
+		
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:Parallel id="showEffect">
+			<s:Rotate3D angleYFrom="-90" angleYTo="0" />
+			<s:Fade alphaFrom="0.0" alphaTo="1" />
+		</s:Parallel>
+		
+		<s:Parallel id="hideEffect">
+			<s:Rotate3D angleYFrom="0" angleYTo="90" />
+			<s:Fade alphaFrom="1" alphaTo="0" />
+		</s:Parallel>
+		
+	</fx:Declarations>
+
+	<fx:Script>
+		<![CDATA[
+			import com.refreshdigital.DataAdapter.*;
+			import com.refreshdigital.Preferences;
+			import com.refreshdigital.Profile;
+			import com.refreshdigital.Util;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.IndexChangedEvent;
+			
+			[Bindable]
+			public var profiles:ArrayCollection = null;
+			
+			public const PROFILE_ACTION_ADD:String 		= 'Add';
+			public const PROFILE_ACTION_EDIT:String 	= 'Save';
+			public const PROFILE_ACTION_BROWSE:String	= 'Browse';
+			
+			[Bindable]
+			private var _profileAction:String			= PROFILE_ACTION_EDIT;
+			
+			[Bindable]
+			private var _profile:Profile				= new Profile();
+			
+			public function profileFormToggle():void {
+				
+				//variables we need in all cases
+				var me:Profiles 		= this;
+				var toHeight:Number		= 0;
+				
+				minHeight				= 0;
+				maxHeight				= 999999;
+				
+				switch(_profileAction) {
+					//we are going to the add or edit  profile
+					case PROFILE_ACTION_ADD:
+					case PROFILE_ACTION_EDIT:
+					
+						toHeight = 380;
+												
+						Util.animateProperties(this, {
+							height: toHeight
+
+						},{
+							duration: .5,
+							completeCallback: function():void {
+							
+								profileFormViewStack.visible 	= true;
+								tabs.visible					= true;
+								buttonsGroup.visible			= false;
+								
+								minHeight = maxHeight = toHeight;
+							
+							}
+						});
+						
+						
+						
+						break;
+					
+					case PROFILE_ACTION_BROWSE:
+							
+						toHeight = 200;
+						
+						Util.animateProperties(this, {
+							height: toHeight
+						},{
+							duration: .5,
+							completeCallback :function():void {
+								minHeight = maxHeight = toHeight;
+							}
+						});
+						
+						profileFormViewStack.visible 	= false;
+						tabs.visible					= false;
+						buttonsGroup.visible			= true;
+						
+						resetFields(); //blank out the input fields
+						
+						break;
+					
+				}
+				
+			}
+			
+			/**
+			 * Resets the form fields for all
+			 */
+			public function resetFields(fullClear:Boolean = true):void {
+					
+				//reset ac fields
+				if(fullClear || _profile.nickname == "") {
+					_profile					= new Profile();
+					_profile.nickname 			= "My Profile";
+					_profile.acUrl 				= "";
+					_profile.acApiKey 			= "";
+				
+					
+					_profile.basecampUrl 		= "https://company.basecamphq.com";
+					_profile.basecampUsername 	= "";
+					_profile.basecampPassword	= "";
+				}
+			
+			}
+			
+			
+			/**
+			 * adds a new profile if the action is set to add
+			 * otherwise updates
+			 */
+			public function addProfile(type:String):void {
+				
+				var profile:Profile 		= new Profile();
+				var testProfile:Boolean 	= false;
+				
+				switch(type) {
+					case Profile.TYPE_ACTIVECOLLAB:
+						
+						profile.type		= DataAdapterActiveCollab.NAME;
+						profile.nickname	= acNickname.text;
+						profile.acUrl		= acUrl.text;
+						profile.acApiKey	= acApiKey.text;
+						testProfile			= true;
+						
+						//set the id of the selected profile if we are editing
+						if(_profileAction == PROFILE_ACTION_EDIT) {
+							profile.id		= listProfiles.selectedItem.id;
+						}
+		
+						break;
+					
+					case Profile.TYPE_BASECAMP:
+						
+						profile.type				= DataAdapterBasecamp.NAME;
+						profile.nickname			= basecampNickname.text;
+						profile.basecampUrl			= basecampUrl.text;
+						profile.basecampUsername 	= basecampUsername.text;
+						profile.basecampPassword	= basecampPassword.text;
+						testProfile					= true;
+						
+						break;
+					
+					default: 
+						Alert.show("Coming soon..","",4,Util.timerBar);
+						return;
+				}
+				
+				
+				if(testProfile) {
+					var me:DrawerGroup = this;
+					
+					this.showProgress('Testing Account');
+					
+					var success:Function = function(event:DataAdapterEvent):void {
+						
+						me.hideProgress();
+						
+						//if basecamp, save the users id
+						if(profile.type == Profile.TYPE_BASECAMP) {
+							profile.basecampUserId = event.results.id;
+						}
+						
+						profile.save();
+						Profile.setInstance(profile);
+						
+						
+						_profileAction = PROFILE_ACTION_BROWSE;
+						profileFormToggle();
+						
+						initProfiles();
+						
+					}
+					
+					var failure:Function = function(event:*):void {
+						me.hideProgress();
+						Alert.show("An error occurred, please check your settings and try again.","",4,Util.timerBar);
+					}
+					
+					profile.testAccountSettings(success,failure);
+				}
+				
+			}
+			
+			override public function afterShow():void {
+		
+				if(this._firstRun) {
+					this.initProfiles();
+				}
+				
+				super.afterShow();
+	
+			}
+			
+			public function initProfiles():void {
+				
+				var profileObjects:Array = Profile.getProfiles();
+				
+				if(profileObjects.length == 0) {
+					
+					profiles = new ArrayCollection([{ nickname:"No profiles found.", id: -1, type:"" }]);
+					
+				} else {
+					
+					_profileAction = PROFILE_ACTION_BROWSE;
+					
+					//reset profiles array
+					profiles = new ArrayCollection(profileObjects);
+					
+					//store the selected index
+					var selectedProfile:Profile 	= Profile.getInstance();
+					var selectedProfileId:Number	= (selectedProfile == null) ? -1 : selectedProfile.id;
+					
+					//select the current profile
+					for(var c:Number=0;c<profileObjects.length;c++) {
+						if(profileObjects[c].id == selectedProfileId) {
+							listProfiles.selectedIndex = c;
+							profileSelected();
+						}
+					}
+				}
+				
+				
+				//if there is no selected profile, force them to add one now
+				if(this.profiles.length == 1 && this.profiles[0].id == -1) {
+					_profileAction = PROFILE_ACTION_ADD;
+					profileFormToggle();
+					btnDone.visible = false;
+				} else {
+					_profileAction = PROFILE_ACTION_BROWSE;
+					profileFormToggle();
+				}
+			}
+			
+			/**
+			 * selects a profile and hides the panel
+			 */
+			public function done():void {
+				
+				if(listProfiles.selectedItem is Profile) {
+					Profile.setInstance(listProfiles.selectedItem);
+					this.close();
+				}
+				
+			}
+			
+			/**
+			 * When a profile is selected in the list
+			 */
+			public function profileSelected():void {
+				
+				if(listProfiles.selectedItem is Profile) {
+					
+					/**
+					 * Hide the add profile form
+					 */
+					_profileAction = PROFILE_ACTION_BROWSE;
+					profileFormToggle();
+					
+					btnDone.visible 			= true;
+					btnDeleteProfile.visible 	= true;
+					btnEditProfile.visible		= true;
+					
+				} 
+				//the "No Profiles Found" item was selected
+				else {
+					//TODO: test in app to see to see what happens so you can know what action to take in this case
+					//it will require you to delete all profiles
+				}
+			}
+			
+			/**
+			 * Deletes whichever profile is selected from the list
+			 */
+			public function deleteSelectedProfile():void {
+				if(listProfiles.selectedItem is Profile) {
+					Alert.show("Are you sure you want to delete this profile?","Delete Profile?",Alert.OK|Alert.CANCEL,Util.timerBar,function(event:CloseEvent):void {
+						if(event.detail == Alert.OK) {
+							
+							//remove and reload profiles
+							listProfiles.selectedItem.remove();
+							initProfiles();
+							
+							//make sure no profile id is set so on next load it will prompt for new profile
+							Preferences.getInstance().deleteRecord("profileId");
+							
+							//hide buttons
+							btnDone.visible 			= false;
+							btnDeleteProfile.visible 	= false;
+							btnEditProfile.visible		= false;
+							
+							//set action and reset form (hide input fields)
+							_profileAction = PROFILE_ACTION_BROWSE;
+							profileFormToggle();
+							
+						}
+					});
+				}
+			}
+			
+			
+			public function showProfileAddForm():void {
+				_profileAction = PROFILE_ACTION_ADD;
+				profileFormToggle();
+			}
+			
+			public function showProfileEditForm():void {
+				
+				//make sure a profile is selected from the list
+				if(listProfiles.selectedIndex > -1 && listProfiles.selectedItem && listProfiles.selectedItem is Profile) {
+						
+					_profileAction = PROFILE_ACTION_EDIT;
+										
+					var profile:Profile = listProfiles.selectedItem;
+					
+					//show the right form
+					switch(profile.type) {
+						case Profile.TYPE_SQLLITE:
+							profileFormViewStack.selectedIndex = 2;
+							break;
+						case Profile.TYPE_BASECAMP:
+							profileFormViewStack.selectedIndex = 1;
+							break;
+						
+						//activecollab
+						default:
+							profileFormViewStack.selectedIndex = 0;
+							
+					} //end swich based off type
+
+					this._profile = profile;
+					profileFormToggle();
+
+				}
+			}
+			
+			public function hideProfileForm():void {
+				//don't let them hide if they haven't entered at least 1 profile
+				if(profiles[0].id == -1) {
+					Alert.show("You cannot cancel until you have added at least one profile.","Notice",Alert.OK,Util.timerBar);
+				} else {
+					_profileAction = PROFILE_ACTION_BROWSE;
+					profileFormToggle();
+				}
+			}
+			
+
+			
+
+
+			protected function formTabChangeHandler():void {
+				// TODO Auto-generated method stub
+				resetFields(false);
+			}
+
+		]]>
+	</fx:Script>
+	
+		<s:List skinClass="components.skins.ListSkin" change="profileSelected();" id="listProfiles" dataProvider="{profiles}" styleName="defaultList" width="100%" height="120">
+			
+			<s:itemRenderer>
+				<fx:Component>
+					<s:ItemRenderer>
+						<s:states>
+							<s:State name="normal" />
+							<s:State name="selected" />
+						</s:states>
+						<s:Label id="nameLabel" text="{data.nickname}" top="5" left="5" right="5" width="1000" color.selected="#333333" color.normal="#999999" fontSize="14" fontWeight="bold" />
+						<s:Label id="type" text="{data.typeFormatted}" top="25" bottom="5" left="5" right="5"  fontSize="12" color.normal="#333333" color.selected="#ffffff"/>
+					</s:ItemRenderer>
+				</fx:Component>
+			</s:itemRenderer>
+			
+		</s:List>
+	
+
+	<s:HGroup  top="125" width="100%" height="30" id="buttonsGroup">
+		<mx:LinkButton label="Add Profile"  height="25" width="70" click="showProfileAddForm();" paddingLeft="0" paddingRight="0"/>
+		<mx:LinkButton click="done();" height="25" width="97" label="Use This Profile" id="btnDone"  paddingLeft="0" paddingRight="0"/>
+		<mx:Spacer width="100%" />
+		<mx:LinkButton click="showProfileEditForm();" height="25" width="38" label="Edit" id="btnEditProfile"  paddingLeft="0" paddingRight="0"/>
+		<mx:LinkButton click="deleteSelectedProfile();" height="25" width="47" label="Delete" id="btnDeleteProfile"  paddingLeft="0" paddingRight="0"/>
+	</s:HGroup>
+
+	
+	<mx:LinkBar width="100%" top="125" id="tabs" visible="false" textSelectedColor="0xFFFFFF" dataProvider="{profileFormViewStack}" />
+	
+	<mx:ViewStack change="formTabChangeHandler()" top="145" visible="false" id="profileFormViewStack" width="100%">
+		<s:NavigatorContent backgroundAlpha="0" showEffect="{showEffect}" hideEffect="{hideEffect}" label="ActiveCollab" width="100%" height="100">
+			
+			<mx:Form width="100%">
+				
+				<mx:FormItem label="Nickname" width="100%">
+					<s:TextInput id="acNickname" height="25" width="100%" text="@{this._profile.nickname}" />
+				</mx:FormItem>
+				
+				<mx:FormItem label="URL" width="100%">
+					<s:TextInput id="acUrl" height="25" width="100%" text="@{this._profile.acUrl}" />
+				</mx:FormItem>
+				
+				<mx:FormItem label="API Key" width="100%">
+					<s:TextInput id="acApiKey" height="25" width="100%" text="@{this._profile.acApiKey}" />
+				</mx:FormItem>
+				
+				<mx:HBox paddingTop="10">
+					<s:Button label="Cancel" height="25" width="80" click="hideProfileForm();" />
+					<s:Button label="{this._profileAction}" id="btnSubmitAc" height="25" width="80"  click="addProfile(Profile.TYPE_ACTIVECOLLAB);"/>
+				</mx:HBox>
+				
+			</mx:Form>
+		</s:NavigatorContent>
+		
+		<s:NavigatorContent  backgroundAlpha="0" showEffect="{showEffect}" hideEffect="{hideEffect}" label="Basecamp" width="100%">
+			<mx:Form width="100%">
+			
+				<mx:FormItem label="Nickname" width="100%">
+					<s:TextInput id="basecampNickname" height="25" width="200" text="@{this._profile.nickname}" />
+				</mx:FormItem>			
+				
+				<mx:FormItem label="URL">
+					<s:TextInput id="basecampUrl" height="25" width="200" text="@{this._profile.basecampUrl}" />
+				</mx:FormItem>
+				
+				<mx:FormItem label="Username">
+					<s:TextInput id="basecampUsername" height="25" width="200" text="@{this._profile.basecampUsername}" />
+				</mx:FormItem>
+				
+				<mx:FormItem label="Password">
+					<s:TextInput  id="basecampPassword" height="25" width="200" text="@{this._profile.basecampPassword}" displayAsPassword="true" />
+				</mx:FormItem>
+				
+				<mx:HBox paddingTop="10">
+					<s:Button label="Cancel" height="25" width="80" click="hideProfileForm();" />
+					<s:Button label="{this._profileAction}" id="btnSubmitBasecamp" height="25" width="80" click="addProfile(Profile.TYPE_BASECAMP);"  />
+				</mx:HBox>
+				
+			</mx:Form>
+		</s:NavigatorContent>
+		<!--
+		<s:NavigatorContent  backgroundAlpha="0" showEffect="{showEffect}" hideEffect="{hideEffect}" label="SQL Lite" width="100%">
+			<mx:Form width="100%">
+				
+				<mx:FormItem label="Coming Soon" width="100%" />
+
+				
+				<mx:FormItem visible="false" label="Nickname" width="100%">
+					<s:TextInput id="localName" height="25" width="200" text="" />
+				</mx:FormItem>
+				
+				<mx:HBox visible="false" paddingTop="10">
+					<s:Button label="Cancel" height="25" width="80" click="hideProfileForm();" />
+					<s:Button label="{this._profileAction}" id="btnSubmitSql" height="25" width="80"  click="addProfile(Profile.TYPE_SQLLITE);"/>
+				</mx:HBox>
+				
+			</mx:Form>
+		</s:NavigatorContent>
+	-->
+	</mx:ViewStack>
+	
+	
+</components:DrawerGroup>

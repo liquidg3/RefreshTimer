@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+ADOBE SYSTEMS INCORPORATED
+Copyright 2008 Adobe Systems Incorporated
+All Rights Reserved.
+
+NOTICE: Adobe permits you to use, modify, and distribute this file
+in accordance with the terms of the license agreement accompanying it.
+
+-->
+
+<!--- The default skin class for the Spark Button component.  
+
+@see spark.components.Button
+
+@langversion 3.0
+@playerversion Flash 10
+@playerversion AIR 1.5
+@productversion Flex 4
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+			 xmlns:fb="http://ns.adobe.com/flashbuilder/2009" 
+			 minWidth="16" 
+			 minHeight="16" 
+			 width="25"
+			 height="20"
+			 alpha.disabled="0.5"
+			 >
+	
+	<!-- host component -->
+	<fx:Metadata>
+		<![CDATA[ 
+		/** 
+		* @copy spark.skins.spark.ApplicationSkin#hostComponent
+		*/
+		[HostComponent("spark.components.Button")]
+		[Style(name="icon",type="*")]
+		
+		]]>
+	</fx:Metadata>
+	
+	<fx:Script fb:purpose="styling">
+		<![CDATA[         
+	
+			[Bindable]
+			private var _backgroundAlphaOver:Number = 1;
+			
+			[Bindable]
+			private var _backgroundAlphaDown:Number = 1;
+			
+			/* Define the skin elements that should not be colorized. 
+			For button, the graphics are colorized but the label is not. */
+			static private const exclusions:Array = ["labelDisplay", "fillRect"];
+			
+			/** 
+			 * @private
+			 */     
+			override public function get colorizeExclusions():Array {return exclusions;}
+			
+			/**
+			 * @private
+			 */
+			override protected function initializationComplete():void
+			{
+				useChromeColor = true;
+				super.initializationComplete();
+			}  
+			
+			/**
+			 *  @private
+			 */
+			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void
+			{
+			
+				
+				if(getStyle('icon')) {
+					icon.source = getStyle('icon');
+				} else {
+					icon.visible 		= false;
+					imageMask.width 	= 0;
+				}
+	
+				
+				if(getStyle('backgroundAlphaOver') is Number) {
+					_backgroundAlphaOver = getStyle('backgroundAlphaOver');
+				} else {
+					_backgroundAlphaOver = 1
+				}
+				
+				if(getStyle('backgroundAlphaDown') is Number) {
+					_backgroundAlphaDown = getStyle('backgroundAlphaDown');
+				} else {
+					_backgroundAlphaDown = 1
+				}
+			
+				super.updateDisplayList(unscaledWidth, unscaledHeight);
+			}
+			
+			private var cornerRadius:Number = 2;
+		]]>        
+	</fx:Script>
+	
+	<!-- states -->
+	<s:states>
+		<s:State name="up" />
+		<s:State name="over" />
+		<s:State name="down" />
+		<s:State name="disabled" />
+	</s:states>
+	
+	<s:Rect id="fillRect" includeIn="over, down" radiusX="3" left="0" top="0" right="0" bottom="0" alpha.down="{_backgroundAlphaDown}" alpha.over="{_backgroundAlphaOver}">
+		<s:fill>
+			<s:SolidColor color="#000000" />
+		</s:fill>
+	</s:Rect>
+	
+	<s:Group id="imageMask" left="0" right="0" top="0" bottom="0">
+		<s:Rect left="0" right="0" top="0" bottom="0">
+			<s:fill>
+				<s:SolidColor color="#000" />
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+	
+	<s:Group width="100%" height="100%">
+		<s:layout>
+			<s:HorizontalLayout horizontalAlign="center" />
+		</s:layout>
+		
+			<s:Group height="100%">
+				<s:layout>
+					<s:VerticalLayout verticalAlign="middle" />
+				</s:layout>			
+				<s:BitmapImage mask="{imageMask}" id="icon" left="4" source="" />
+			</s:Group>
+		
+		
+	</s:Group>
+	
+	<s:Label id="labelDisplay"
+			 textAlign="center"
+			 verticalAlign="middle"
+			 maxDisplayedLines="1"
+			 horizontalCenter="0" verticalCenter="1"
+			 left="10" right="10" top="2" bottom="2">
+	</s:Label>
+	
+</s:SparkSkin>

@@ -1,0 +1,150 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+@namespace refresh "com.refreshdigital.*";
+
+@font-face {
+	src: url("assets/LCDMB___.TTF");
+	fontFamily: "lcd";
+	embedAsCFF: true;
+}
+
+#lblTimer {
+	font-family:lcd;
+	fontLookup: embeddedCFF;
+	fontSize:16;
+	paddingTop:4px;
+	color:#d1d1d1;
+}
+
+
+global
+{
+	font-family: "Arial";
+	contentBackgroundColor: #000000;
+	fontSize: 12;
+}
+s|Button
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.ButtonDefault");
+	marginLeft:0;
+	paddingLeft:0;
+	marginRight:0;
+	paddingRight:0;
+	
+}
+s|List.menuList
+{
+	/*skinClass: ClassReference("components.DataList2");*/
+	
+}
+s|List.defaultList
+{
+	/*skinClass: ClassReference("components.DataList1");*/
+	background-color:#FFF;
+	
+}
+s|HSlider
+{
+	skinClass: ClassReference("components.HorizontalSlider1");
+}
+s|VSlider
+{
+	skinClass: ClassReference("components.VerticalSlider1");
+}
+s|ToggleButton
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.ToggleButton1");
+	
+}
+s|CheckBox
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.Checkbox1");
+}	
+
+
+s|HScrollBar
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.HorizontalScrollbar1");
+}
+
+s|VScrollBar
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.VerticalScrollbar5");
+}	
+
+s|RadioButton
+{
+	focusColor: #4fcce8;
+	skinClass: ClassReference("components.RadioButton1");
+}
+
+s|TextInput {
+	skinClass: ClassReference("components.TextInput1");
+}
+
+s|DropDownList {
+	color:#000000;
+	contentBackgroundColor:#FFF;
+}
+
+.browseList {
+	borderAlpha:"0";
+	contentBackgroundAlpha: "0" ;
+}
+
+#listProfiles {
+	backgroundColor:#FFFFFF;	
+}
+
+s|Window {
+	backgroundColor:#000;
+	color:#FFF;
+}
+
+/**
+ * Project specific
+ */
+
+s|NavigatorContent {
+	background-color:#222222;	
+	
+	paddingTop:10px;
+}
+
+mx|LinkButton {
+	rollOverColor:#FFFFFF;
+}
+
+mx|TabNavigator {
+	backgroundColor:#CCC;
+	borderColor:#666666;
+
+	paddingTop:2;
+}
+
+mx|TabBar {
+	color:#000;	
+}
+
+mx|ToolTip {
+	backgroundColor:#000000;
+	color:#FFFFFF;
+}
+
+
+/**
+ * Custom Buttons
+ */
+refresh|ButtonIcon {
+	skinClass: ClassReference('components.skins.ButtonIconSkin');
+}
+
+#grippieBar {
+	backgroundAlphaOver:0;
+}

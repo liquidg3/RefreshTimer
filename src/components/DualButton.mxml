@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="init()">
+	<s:layout>
+		<s:HorizontalLayout>
+			<s:gap>0</s:gap>
+		</s:HorizontalLayout>
+	</s:layout>
+	<s:states>
+		<s:State name="button1" />
+		<s:State name="button2" />
+	</s:states>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			public function init():void {
+			}
+
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				this.currentState = "button1";
+			}
+
+
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				this.currentState = "button2";
+			}
+
+		]]>
+	</fx:Script>
+	
+	<mx:LinkButton fontWeight.button1="bold" color.button2="#CCCCCC" id="button1" label="Button 1" click="button1_clickHandler(event)"/>
+	<mx:LinkButton fontWeight.button2="bold" color.button1="#CCCCCC" id="button2" label="Button 2" click="button2_clickHandler(event)"/>
+</s:Group>

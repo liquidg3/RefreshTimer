@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:s="library://ns.adobe.com/flex/spark" xmlns:fx="http://ns.adobe.com/mxml/2009">
+	<fx:Metadata>[HostComponent("spark.components.CheckBox")]</fx:Metadata>
+	<s:states>
+		<s:State name="up"/>
+		<s:State name="over"/>
+		<s:State name="down"/>
+		<s:State name="disabled"/>
+		<s:State name="upAndSelected"/>
+		<s:State name="overAndSelected"/>
+		<s:State name="downAndSelected"/>
+		<s:State name="disabledAndSelected"/>
+	</s:states>
+	
+	<s:Rect height="17" width="16" left="0" top="0"  id="rect1">
+		<s:stroke>
+			<s:SolidColorStroke color="#ffffff" caps="none" joints="miter" miterLimit="4" weight="1"/>
+		</s:stroke>
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="#6e6e6e" />
+				<s:GradientEntry color="#4e4e4e" />
+			</s:LinearGradient>
+		</s:fill>
+		<s:fill.disabled>
+			<s:SolidColor color="#cccccc"/>
+		</s:fill.disabled>
+		<s:fill.disabledAndSelected>
+			<s:SolidColor color="#cccccc"/>
+		</s:fill.disabledAndSelected>
+	</s:Rect>
+
+	
+	<s:RichText y="4" color="#FFFFFF"  fontSize="12" tabStops="S0 S50 S100" whiteSpaceCollapse="preserve" id="labelDisplay" text="(Label)" right.over="0" left.over="21" right.up="0" left.up="21" right.down="0" left.down="21" right.disabled="0" left.disabled="21" right.upAndSelected="0" left.upAndSelected="21" left.overAndSelected="21" right.overAndSelected="0" right.downAndSelected="0" left.downAndSelected="21" right.disabledAndSelected="0" left.disabledAndSelected="21">
+	</s:RichText>
+	
+	<s:Rect y="5" x="5"  height="8" width="8" id="rect2" includeIn="disabledAndSelected,downAndSelected,overAndSelected,upAndSelected">
+		<s:fill>
+			<s:SolidColor color="#ffffff" alpha="1"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:transitions>
+		<s:Transition fromState="upAndSelected" toState="up" autoReverse="true">
+			<s:Parallel>
+				<s:Parallel target="{rect2}">
+					<s:Fade duration="0"/>
+				</s:Parallel>
+			</s:Parallel>
+		</s:Transition>
+	</s:transitions>
+</s:Skin>

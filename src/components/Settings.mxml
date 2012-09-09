@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:DrawerGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="520"
+		 height="325" 
+		 resizable="false"
+		 xmlns:components="components.*">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.refreshdigital.Preferences;
+			import com.refreshdigital.Profile;
+			import com.refreshdigital.Util;
+			
+			import flash.display.Screen;
+			
+			import mx.collections.ArrayCollection;
+
+			[Bindable]
+			private var _screens:ArrayCollection;
+			
+			[Bindable]
+			private var _checkForUpdates:Boolean;
+			
+			[Bindable]
+			private var _showCompletedTasks:Boolean;
+			
+			[Bindable]
+			private var _showCompletedChecklistTasks:Boolean;
+			
+			[Bindable]
+			private var _showEmptyProjects:Boolean;
+			
+			[Bindable]
+			private var _screenPosition:Number;
+			
+			[Bindable]
+			private var _selectedScreen:Number;
+			
+			[Bindable]
+			private var _enableChecklists:Boolean;
+			
+			[Bindable]
+			private var _useCheckboxesForSubTasks:Boolean;
+			
+			[Bindable]
+			private var _alwaysInFront:Boolean;
+			
+			[Bindable]
+			private var _autoHide:Boolean;
+			
+			[Bindable]
+			private var _idleTimeout:String;
+			
+			[Bindable]
+			private var _defaultBillingStatus:Number;
+			
+			override public function init():void {
+				//load screens
+				_screens = new ArrayCollection();
+				for(var c:Number=0;c<Screen.screens.length;c++) {
+					var screenDimensions:String = Screen.screens[c].bounds.width + 'x' + Screen.screens[c].bounds.height;
+					_screens.addItem({ label: 'Screen ' + (c + 1) + ' (' + screenDimensions + ')', index: c });
+				}
+			}
+			
+			/**
+			 * sets up the settings drawer (loads settings
+			 */
+			override public function afterShow():void {
+
+				super.afterShow();
+
+				var prefs:Preferences = new Preferences();
+				
+				
+				//set values
+				this._selectedScreen 				= prefs.getSelectedScreenIndex();
+				this._checkForUpdates 				= (prefs.getRecord('checkForUpdates','0') == '1');
+				this._showCompletedTasks			= (prefs.getRecord('showCompletedTasks', '0') == '1');
+				this._showCompletedChecklistTasks 	= (prefs.getRecord('showCompletedChecklistTasks', '0') == '1');
+				this._enableChecklists 				= (prefs.getRecord('enableChecklists', '0') == '1');
+				this._showEmptyProjects				= (prefs.getRecord('showEmptyProjects', '0') == '1');
+				this._screenPosition				= (prefs.getRecord('screenPosition', Preferences.POSITION_TOP) == Preferences.POSITION_TOP) ? 0 : 1;
+				this._useCheckboxesForSubTasks		= (prefs.getRecord('useCheckboxesForSubTasks', '0') == '1');
+				this._alwaysInFront					= (prefs.getRecord('alwaysInFront', '0') == '1');
+				this._autoHide						= (prefs.getRecord('autoHide', '0') == '1');
+				this._idleTimeout					= prefs.getRecord('idleTimeout', '0');
+				this._defaultBillingStatus			= prefs.getRecord('defaultBillingStatus','0');	
+			}
+	
+			/**
+			 * Cose the settings drawer
+			 */
+			public function closeSettings():void {
+				this.close();
+			}
+			
+			public function saveSettings():void {
+				var prefs:Preferences = new Preferences();
+				prefs.saveRecord('checkForUpdates',(_checkForUpdates) ? '1' : '0');
+				prefs.saveRecord('showCompletedTasks',(_showCompletedTasks) ? '1' : '0');
+				prefs.saveRecord('showEmptyProjects',(_showEmptyProjects) ? '1' : '0');
+				prefs.saveRecord('enableChecklists',(_enableChecklists) ? '1' : '0');
+				prefs.saveRecord('showCompletedChecklistTasks',(_showCompletedChecklistTasks) ? '1' : '0');
+				
+				prefs.saveRecord('alwaysInFront',(_alwaysInFront) ? '1' : '0');
+				prefs.saveRecord('autoHide',(_autoHide) ? '1' : '0');
+				
+				prefs.saveRecord('useCheckboxesForSubTasks',(_useCheckboxesForSubTasks) ? '1' : '0');
+				
+				prefs.saveRecord('selectedScreen',_selectedScreen.toString());
+				
+				prefs.saveRecord('screenPosition', (_screenPosition == 0) ? Preferences.POSITION_TOP : Preferences.POSITION_BOTTOM);
+				prefs.saveRecord('idleTimeout', this._idleTimeout);
+				
+				prefs.saveRecord('defaultBillingStatus', String(this._defaultBillingStatus));
+				
+				closeSettings();
+				Util.timerBar.refreshSettings();
+			}
+
+		
+
+		]]>
+	</fx:Script>
+
+	<mx:TabNavigator width="100%">
+		
+		<s:NavigatorContent label="Settings">
+			
+			<s:layout>
+				<s:VerticalLayout paddingTop="10" />
+			</s:layout>
+			
+			<mx:Form height="100%" width="100%" paddingTop="0">
+			
+			
+				<mx:FormItem height="25" label="Screen" >
+					<s:DropDownList id="selectedScreen" selectedIndex="@{this._selectedScreen}" dataProvider="{_screens}" width="200"></s:DropDownList>
+				</mx:FormItem>
+				
+				<mx:FormItem height="25" label="Screen Position" >
+					<s:DropDownList id="screenPosition" selectedIndex="@{this._screenPosition}" width="113">
+						<s:ArrayCollection>
+							<fx:Object label="Top" value="top" />
+							<fx:Object label="Bottom" value="bottom" />
+						</s:ArrayCollection>
+						
+					</s:DropDownList>
+				</mx:FormItem>
+				
+				<mx:FormItem height="25" label="Always In Front">
+					<s:CheckBox label="" id="alwaysInFront" selected="@{this._alwaysInFront}" />
+				</mx:FormItem>
+				
+				<mx:FormItem height="25" label="Auto Collapse">
+					<s:CheckBox label="(still in beta)" id="autoHide" selected="@{this._autoHide}" />
+				</mx:FormItem>
+				
+				<s:HGroup height="25">
+					<s:Label width="165" text="Stop Timer After" paddingTop="5" textAlign="right" paddingRight="10" />
+					<s:TextInput lineHeight="20" height="20" widthInChars="3" id="idleTime" text="@{this._idleTimeout}" />
+					<s:Label text="Minutes of Inactivity (0 for unlimited)" paddingTop="5" />
+				</s:HGroup>
+					
+				
+				<mx:FormItem height="25"  label="Check For Updates On Load">
+					<s:CheckBox label="" selected="@{this._checkForUpdates}" id="checkForUpdates" /> 
+				</mx:FormItem>
+			</mx:Form>
+		</s:NavigatorContent>
+		
+		<s:NavigatorContent label="ActiveCollab">
+			
+			<s:layout>
+				<s:VerticalLayout paddingTop="10" />
+			</s:layout>
+			
+			<mx:Form height="100%" width="100%" paddingTop="0">
+				
+				<mx:FormItem height="25"  label="Show Projects With No Tickets">
+					<s:CheckBox label="" id="showEmptyProjects" selected="@{this._showEmptyProjects}" /> 
+				</mx:FormItem>
+				
+				<mx:FormItem height="25" label="Show Completed Tasks/Subtasks">
+					<s:CheckBox right="0" label="" id="showCompletedTasks" selected="@{this._showCompletedTasks}" /> 
+				</mx:FormItem>
+				
+				<mx:FormItem height="25"  label="Enable Checklists">
+					<s:CheckBox label="Requires ActiveCollab Plugin" selected="@{this._enableChecklists}" id="enableChecklists" /> 
+				</mx:FormItem>
+				
+				<mx:FormItem height="25"  label="Show Completed Checklist Items">
+					<s:CheckBox label="" id="showCompletedChecklistTasks" selected="@{this._showCompletedChecklistTasks}" /> 
+				</mx:FormItem>
+				
+				<mx:FormItem height="25" label="Default Billing Status">
+					<s:DropDownList id="billingStatus" width="200" contentBackgroundColor="#FFFFFF" selectedIndex="@{this._defaultBillingStatus}">
+						<mx:ArrayCollection>
+							<fx:String>Non-Billable</fx:String>
+							<fx:String>Billable</fx:String>
+							<fx:String>Billable and Pending Payment</fx:String>
+							<fx:String>Billed</fx:String>
+						</mx:ArrayCollection>
+					</s:DropDownList>
+				</mx:FormItem>
+				
+			</mx:Form>
+			
+		</s:NavigatorContent>
+		
+		<s:NavigatorContent label="Basecamp">
+			
+			<s:layout>
+				<s:VerticalLayout paddingTop="10" />
+			</s:layout>
+			
+			<mx:Form height="100%" width="100%" paddingTop="0">
+				
+				<mx:FormItem height="25"  label="Show Projects With No Todo-lists">
+					<s:CheckBox label="" selected="@{this._showEmptyProjects}" /> 
+				</mx:FormItem>
+				
+				<mx:FormItem height="25" label="Show Completed Todo-list Items">
+					<s:CheckBox label="" selected="@{this._showCompletedTasks}" /> 
+				</mx:FormItem>
+				
+				<mx:FormItem height="25" label="Use Checkboxes For Todo-list Items">
+					<s:CheckBox label="" selected="@{this._useCheckboxesForSubTasks}" /> 
+				</mx:FormItem>
+				
+			</mx:Form>
+			</s:NavigatorContent>
+	</mx:TabNavigator>
+	
+	
+	<mx:HBox horizontalAlign="right" bottom="0" width="100%">
+		<s:Button label="Cancel" height="25" width="80" click="closeSettings();" />
+		<s:Button label="Save" height="25" width="80" click="saveSettings();" />
+	</mx:HBox>
+
+</components:DrawerGroup>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="628" height="394">
+	<s:layout>
+		<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" />
+	</s:layout>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+
+	<fx:Script>
+		<![CDATA[
+			
+			import com.refreshdigital.*;
+			import com.refreshdigital.DataAdapter.DataAdapterActiveCollab;
+			
+			import mx.rpc.events.ResultEvent;
+			
+			public var timer:Timer		= null;
+			public var startDate:Date 	= null;
+			public var test:UnitTest	= null;
+	
+			public var sequences:Array  = [
+				['Project.getProjects(this.next, this.failure)', '0.getTasks(this.next, this.failure)']
+			];
+			
+			public function init():void {
+				testList.selectedIndex = 0;
+			}
+			
+			public function startTest():void {
+				
+				//start the timer
+				if(!timer) {
+					timer = new Timer(10,0);	
+					timer.addEventListener(TimerEvent.TIMER,updateTimerLabel);
+				}
+	
+				startDate = new Date();
+				timer.start();
+				
+				//reset the text box
+				results.text = '';
+
+				//create unit test
+				trace('instantiating unit test');
+				
+				test = new UnitTest();
+				test.setSequence(sequences[testList.selectedIndex]);
+				
+				trace('binding listeners');
+				test.addEventListener(UnitTestEvent.TYPE_STEP,function(e:UnitTestEvent):void {
+					trace(e.message);
+				});
+				
+				test.addEventListener(UnitTestEvent.TYPE_STOP,function(e:UnitTestEvent):void {
+					trace(e.message);
+					stopTest();
+				});
+
+				trace('creating profile of type: ' + DataAdapterActiveCollab.NAME);
+				test.setProfile(DataAdapterActiveCollab.NAME);
+					
+				trace('starting unit test sequence');
+				test.start();
+			}
+			
+			public function stopTest():void {
+				timer.stop();
+				trace('test stopped');
+			}
+			
+	
+			public function testError(result:ResultEvent):void {
+				trace("ERROR OCCURRED");
+				trace(result.message.toString());
+				stopTest();
+			}
+			
+			/**
+			 * Writes message to the results text box
+			 */
+			public function trace(message:*):void {
+				var string:String = '';
+				
+				switch(typeof(message)) {
+					case 'string':
+						string = message;
+						break;
+					case 'Array':
+						string = message.join(',');
+						break;
+					default:
+						throw new Error('trace does not understand type ' + typeof(message));
+							
+				} 
+				
+				results.text += getElapsedTime() + ": " + string + "\n";
+			}
+			
+			public function getElapsedTime():Number {
+				var now:Date 		= new Date();
+				var elapsed:Number 	= now.valueOf() - startDate.valueOf();
+				return elapsed/1000;
+			}
+			
+			
+			public function updateTimerLabel(event:TimerEvent):void {
+				
+				timeLabel.text		= 'Elapsed Time: ' + getElapsedTime();
+			}
+		
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label text="RefreshTimer Unit Tests" fontSize="18" />
+	
+	<mx:Form left="0" width="100%" height="100%">
+		
+		<mx:FormItem label="Select Test #" width="100%">
+			
+			<s:Group width="100%">
+				
+				<s:layout>
+					<s:HorizontalLayout />
+				</s:layout>
+				
+				<s:DropDownList width="100%" id="testList" selectedIndex="0">
+					<s:ArrayCollection>
+						<fx:String>1 - ActiveCollab</fx:String>
+					</s:ArrayCollection>
+				</s:DropDownList>
+					
+				<s:Button label="Go" width="50" height="20" click="startTest();" />
+				
+			</s:Group>
+			
+		</mx:FormItem>
+		
+		<mx:FormItem width="100%" label="Results" height="100%">
+			<s:TextArea width="100%" height="100%" id="results"/>
+		</mx:FormItem>
+		
+	</mx:Form>
+	<s:Label id="timeLabel" text="Elapsed Time:" />
+</s:Window>

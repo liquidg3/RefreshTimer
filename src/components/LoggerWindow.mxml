@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:Drawer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx" 
+				   xmlns:components="components.*" 
+				   width="100%" 
+				   height="100%" 
+				   resizable="true" 
+				   close="handleClose(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import com.refreshdigital.Logger;
+			import com.refreshdigital.LoggerEvent;
+			
+			import mx.binding.utils.BindingUtils;
+			
+			
+			override public function init():void {
+				
+				this.keepOpenDuringHideAll 		= true;
+				this.draggable 					= true;
+				
+				Logger.getInstance().addEventListener(LoggerEvent.TYPE_MESSAGE_LOGGED,setScroll);
+				//BindingUtils.bindProperty(logTextArea, 'text', Logger.getInstance(), 'logMessage');
+				
+				logTextArea.scroller.verticalScrollBar.value = logTextArea.scroller.verticalScrollBar.maximum;
+				
+				
+				super.init();
+			}
+			
+			public function setScroll(e:LoggerEvent):void {
+				
+				var scrollToBottom:Boolean = false;
+				if(logTextArea.scroller.verticalScrollBar.value >= logTextArea.scroller.verticalScrollBar.maximum - (logTextArea.scroller.verticalScrollBar.maximum * .25)) {
+					scrollToBottom = true;
+				}
+				
+				logTextArea.text += e.lastMessage + "\n";
+				
+				if(scrollToBottom) {
+					setTimeout(function():void {
+						logTextArea.scroller.verticalScrollBar.value = 9999999999999999;
+					},0);
+					
+				}
+			}
+
+			protected function handleClose(event:Event):void {
+				
+				Logger.getInstance().removeEventListener(LoggerEvent.TYPE_MESSAGE_LOGGED,setScroll);
+				
+			}
+
+		]]>
+	</fx:Script>
+	
+	<s:TextArea id="logTextArea" left="0" right="0" top="0" bottom="0" />
+	
+</components:Drawer>

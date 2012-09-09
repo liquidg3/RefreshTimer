@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:DrawerGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="450" 
+		 height="210" height.basecamp="170"
+		 keyDown="form1_keyDownHandler(event)"
+		 xmlns:components="components.*">
+	
+	
+	<fx:Metadata>
+		[Event(name="submit", type="com.refreshdigital.TimePostDrawerEvent")]
+	</fx:Metadata>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<components:states>
+		<s:State name="activecollab" />
+		<s:State name="basecamp" />
+	</components:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.refreshdigital.Preferences;
+			import com.refreshdigital.Profile;
+			import com.refreshdigital.TimePostDrawerEvent;
+			
+			
+			[Bindable]
+			public var hours:Number					= 0;
+			[Bindable]
+			public var minutes:Number				= 0;
+			[Bindable]
+			public var seconds:Number				= 0;
+			
+			public function setTime(elapsedTime:Number):void {
+				
+				resetValues();
+				
+				var date:Date 			= new Date(elapsedTime);
+				
+				hourSpinner.value 					= date.hoursUTC;
+				minuteSpinner.value 				= date.minutes;
+				secondsSpinner.value 				= date.seconds;
+			}
+			
+			private function submitTime():void {
+				
+				var date:Date					= new Date;
+				date.hoursUTC 					= hourSpinner.value;
+				date.minutes					= minuteSpinner.value;
+				date.seconds					= secondsSpinner.value;
+				
+				//Drawer.getFromId('time').showProgress("Submitting Time");
+				var event:TimePostDrawerEvent = new TimePostDrawerEvent(TimePostDrawerEvent.SUBMIT);
+				event.elapsedTime 	= date.valueOf();
+				event.billingType	= billingStatus.selectedIndex;
+				event.comments 		= commentArea.text;
+				
+				this.dispatchEvent(event);
+			}
+			
+			
+			override public function open():void {
+				
+				if(Profile.getInstance().type == Profile.TYPE_ACTIVECOLLAB) {
+					this.currentState = 'activecollab';
+				} else if(Profile.getInstance().type == Profile.TYPE_BASECAMP) {
+					this.currentState = 'basecamp';
+				}
+				super.open();
+				
+					
+			}
+			
+			private function cancelTime():void {
+				this.close();
+				//Drawer.getFromId('time').hide();
+			}
+			
+			public function resetValues():void {
+				hourSpinner.value 					= 0;
+				minuteSpinner.value 				= 0;
+				secondsSpinner.value 				= 0;
+				commentArea.text				= "";
+				billingStatus.selectedIndex		= +Preferences.getInstance().getRecord('defaultBillingStatus','0');
+			}
+
+			protected function form1_keyDownHandler(event:KeyboardEvent):void
+			{
+				// TODO Auto-generated method stub
+				//trace(event);
+			}
+
+		]]>
+	</fx:Script>
+	<mx:Form>
+	
+		<mx:FormItem label="HH:MM:SS" id="timeSubmitted" height="29" borderVisible="false">
+			<mx:HBox horizontalGap="0">
+				<s:NumericStepper id="hourSpinner" width="55" stepSize="1" snapInterval="1" allowValueWrap="true" maximum="24" minimum="0"/>
+				<s:NumericStepper id="minuteSpinner" width="55" stepSize="1" snapInterval="1" allowValueWrap="true" maximum="59" minimum="0"/>
+				<s:NumericStepper id="secondsSpinner" width="55" stepSize="1" snapInterval="1" allowValueWrap="true" maximum="59" minimum="0"/>
+			</mx:HBox>
+		</mx:FormItem>
+		<mx:FormItem label="Comments:">
+			<s:TextInput x="64" y="3" height="20" width="280" text="" id="commentArea"/>
+		</mx:FormItem>
+		<mx:FormItem includeIn="activecollab" id="billingStatusFormItem" label="Status:">
+			<s:DropDownList id="billingStatus" x="68" y="1" width="280" contentBackgroundColor="#FFFFFF">
+				<mx:ArrayCollection>
+					<fx:String>Non-Billable</fx:String>
+					<fx:String>Billable</fx:String>
+					<fx:String>Billable and Pending Payment</fx:String>
+					<fx:String>Billed</fx:String>
+				</mx:ArrayCollection>
+			</s:DropDownList>
+		</mx:FormItem>
+		<mx:FormItem bottom="-10" width="364">
+			<mx:HBox>
+				<s:Button label="Cancel" height="25" width="80" click="cancelTime();"/>
+				<s:Button label="Submit" height="25" width="80" click="submitTime();"/>
+			</mx:HBox>
+		</mx:FormItem>
+		</mx:Form>
+</components:DrawerGroup>

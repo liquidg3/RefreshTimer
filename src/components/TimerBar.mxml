@@ -1,0 +1,1546 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" 
+		  xmlns:custom="com.refreshdigital.*"
+		  systemChrome="none"
+		  title="RefreshTimer"
+		  backgroundAlpha="0" 
+		  transparent="true"
+		  minimizable="false"
+		  maximizable="false"
+		  resizable="false"
+		  showStatusBar="false"
+		  minWidth="50" 
+		  minHeight="4"
+		  width="300"
+		  height="400"
+		  alwaysInFront="true" close="window1_closeHandler(event)"
+		  mouseMove="window1_mouseMoveHandler(event)" 
+		  mouseOut="window1_mouseOutHandler(event)"
+		  creationComplete="init()">
+	
+	<s:states>
+		<s:State name="first" />
+		<s:State name="start"/>
+		<s:State name="projectSelectedWithoutTasks"/>
+		<s:State name="projectSelectedWithTasks"/>
+		<s:State name="taskSelectedWithoutSubTasks"/>
+		<s:State name="taskSelectedWithSubTasks"/>
+		<s:State name="subTaskSelected"/>
+		<s:State name="dragging" />
+	</s:states>
+	
+	<fx:Declarations>
+		<s:Parallel id="showEffect">
+			<s:Fade alphaFrom="0.0" alphaTo="1" />
+		</s:Parallel>
+		
+		<s:Parallel id="hideEffect">
+			<s:Fade alphaFrom="1" alphaTo="0" />
+		</s:Parallel>
+	</fx:Declarations>
+
+	<fx:Script>
+		<![CDATA[
+			import air.update.ApplicationUpdaterUI;
+			import air.update.events.UpdateEvent;
+			
+			import com.refreshdigital.Checklist;
+			import com.refreshdigital.ChecklistTask;
+			import com.refreshdigital.DataAdapter.*;
+			import com.refreshdigital.Drawer.DrawerEvent;
+			import com.refreshdigital.HttpServiceRefresh;
+			import com.refreshdigital.Logger;
+			import com.refreshdigital.Preferences;
+			import com.refreshdigital.Profile;
+			import com.refreshdigital.Project;
+			import com.refreshdigital.Remote;
+			import com.refreshdigital.SubTask;
+			import com.refreshdigital.Task;
+			import com.refreshdigital.TimePostDrawerEvent;
+			import com.refreshdigital.TimerLocal;
+			import com.refreshdigital.Util;
+			
+			import components.Drawer;
+			import components.Settings;
+			import components.skins.ButtonIconSkin;
+			import components.skins.DrawerListChecklistItemRenderer;
+			import components.skins.TimerBarSkin;
+			
+			import mx.controls.Alert;
+			import mx.core.Application;
+			import mx.core.FlexGlobals;
+			import mx.core.IVisualElement;
+			import mx.managers.SystemManager;
+			import mx.rpc.events.FaultEvent;
+			
+			import org.goasap.items.LinearGo;
+			
+			import spark.primitives.Rect;
+			
+			
+			/**
+			 * Drag & Drop logic
+			 */
+			private var _dragStart:Point 	= null;
+			private var _lastState:String	= '';
+			private var _dragCurrent:Point 	= null;
+			private var _dragXDelta:Number	= 0;
+			
+			public var timer:TimerLocal 					= new TimerLocal();
+			
+			public var selectedProject:Project				= null;
+			public var selectedChecklist:Checklist 			= null;
+			public var selectedChecklistTask:ChecklistTask 	= null;
+			public var selectedRemoteObject:Remote			= null;
+			
+			private var _projects:Array						= null;
+			
+			[Bindable]
+			public var selectedTask:Task					= null;
+			
+			[Bindable]
+			public var selectedSubTask:SubTask				= null;
+			
+			[Bindable]
+			public var urlAds:String 						= null;
+			
+			private var _firstRun:Boolean					= true;
+			
+			//updater object
+			public var appUpdate:ApplicationUpdaterUI 		= new ApplicationUpdaterUI();
+			
+			/**
+			 * Windows
+			 */
+			public var settingsDrawer:Settings				= null;
+			public var profilesDrawer:Profiles				= null;
+			public var projectsDrawer:DrawerList			= null;
+			public var tasksDrawer:DrawerList				= null;
+			public var subTasksDrawer:DrawerList			= null;
+			public var checklistTasksDrawer:DrawerList		= null;
+			public var timePostDrawer:TimePostDrawer		= null;
+			public var registerDrawer:RegisterDrawer		= null;
+			
+			public function init():void {
+				
+				
+				//save reference to timerbar so alerts can be drawn over them.
+				Util.timerBar 	= this;
+				timerBar.alpha 	= 0;
+				
+				//run upgrade on database if needed
+				var prefs:Preferences = Preferences.getInstance();
+				prefs.upgradeIfNeeded();
+			
+				//place the window
+				this.place();
+				
+				
+				//set the current state
+				this.currentState = 'first';
+				
+				
+				
+				//sync settings between timerbar and databse
+				this.refreshSettings();
+				
+				//idle handler 
+				NativeApplication.nativeApplication.addEventListener(Event.USER_IDLE,handleInactive);
+				
+				//setup profile switch of state
+				var profile:Profile 	= Profile.getInstance();
+				var attachLabelOnProfileLoad:Boolean = true;
+				profile.addEventListener(Profile.EVENT_PROFILE_INSTANCE_SET,function():void {
+					
+					currentState 								= 'start';
+					
+					//set the text for the dual button in the lower right of
+					if(tasksDrawer != null) {
+						tasksDrawer.dualButton.button1.label 	= Profile.getInstance().getDataAdapter().getTaskName();
+						tasksDrawer.dualButton.button2.label 	= "Checklists";
+					}
+					
+					if(attachLabelOnProfileLoad) {
+						attachLabelOnProfileLoad = false;
+						setTimeout(function():void {
+							//setup timer
+							timer.attachLabel(lblTimer);
+						},0);
+					}
+					
+					//this will reset all drawers and load projects
+					if(projectsDrawer != null) {
+						refreshDrawersAfterRemoteObjectStatusChange(new Project({
+							completed: true
+						}));
+					}
+					
+					
+				});
+				
+				
+				//logger window
+				NativeApplication.nativeApplication.addEventListener(KeyboardEvent.KEY_UP,showLoggerWindow);
+				
+				//load selected profile if one is found
+				var profileLoaded:Boolean 	= false;
+				var profileId:String		= Preferences.getInstance().getRecord("profileId", null);
+				var firstRun:Boolean		= true;
+				
+				//load the saved profile
+				if(profileId != null) {
+					firstRun = false;
+					var loadedProfile:Profile = Profile.getFromId(parseInt(profileId));
+					if(loadedProfile != null && loadedProfile.isValid()) {
+						Profile.setInstance(loadedProfile);
+						profileLoaded = true;
+					} else {
+						Alert.show("Your profile could not be loaded. This can happen after you delete it or you updated RefreshTimer. You'll need to select another profile to use.","",4, Util.timerBar);
+					}
+				} else {
+					Alert.show("Welcome to RefreshTimer. Since you haven't setup a profile yet, you're going to have to do that now.","",4, Util.timerBar);
+				}
+				
+				setTimeout(function():void {
+					//check for updates if that setting is set
+					if(prefs.getRecord('checkForUpdates','0') != '0') {
+						
+						appUpdate.updateURL = Util.URL + "/download/updateDescriptor.xml"; // Server-side XML file describing update
+						appUpdate.isCheckForUpdateVisible = false; // We won't ask permission to check for an update
+						appUpdate.addEventListener(UpdateEvent.INITIALIZED, onUpdate); // Once initialized, run onUpdate
+						appUpdate.addEventListener(ErrorEvent.ERROR, function onError(event:ErrorEvent):void {
+							Alert.show(event.toString());
+						}); // If something goes wrong, run onError
+						appUpdate.initialize(); // Initialize the update framework
+						
+					}
+				},2500);
+				
+				//create drawers - creating them here makes them show more smoothly
+				setTimeout(initDrawers,1000);
+				
+				//setup ad html view
+				adBrowser.location = Util.URL + "/ads/index.php?version=" + this.getVersion();
+				
+			}
+			
+			public function refreshSettings():void {
+				var prefs:Preferences = Preferences.getInstance();
+				
+				//IDLE TIME
+				//add idle handler, idletimeout is in minutes
+				if(+prefs.getRecord('idleTimeout','0') > 0) {
+					NativeApplication.nativeApplication.idleThreshold = (+prefs.getRecord('idleTimeout','0')) * 60;
+				}
+				
+				//always in front
+				this.alwaysInFront = (prefs.getRecord('alwaysInFront', '0') == '1');
+				this.place();
+				
+				
+			}
+			
+			private function onUpdate(event:UpdateEvent):void {
+				appUpdate.checkNow(); // Go check for an update now
+			}
+			
+			public function initMenus():void {
+				//NativeApplication.nativeApplication.menu
+				//NativeApplication.nativeApplication.menu.items
+			}
+			
+			public function initDrawers():void {
+				
+				//help with scope
+				var me:TimerBar = this;
+
+				
+				var onDrawerOpen:Function = function(event:DrawerEvent):void {
+					DrawerGroup.closeAllDrawers();
+				}
+				
+				//profiles
+				profilesDrawer 					= new Profiles();
+				profilesDrawer.visible			= false;
+				profilesDrawer.anchorParent 	= btnProfiles;
+				profilesDrawer.addEventListener(DrawerEvent.OPEN,onDrawerOpen);
+				
+				addElement(profilesDrawer);
+				
+				//settings
+				settingsDrawer 				= new Settings();
+				settingsDrawer.visible		= false;
+				settingsDrawer.anchorParent = btnSettings;
+				settingsDrawer.addEventListener(DrawerEvent.OPEN,onDrawerOpen);
+				
+				addElement(settingsDrawer);
+				
+				//time post
+				timePostDrawer				= new TimePostDrawer();
+				timePostDrawer.visible		= false;
+				timePostDrawer.anchorParent = btnStart;
+				timePostDrawer.anchorPosition = {
+					parent: "right bottom",
+					drawer: "right top"
+				};
+				
+				timePostDrawer.addEventListener(TimePostDrawerEvent.SUBMIT,function(event:TimePostDrawerEvent):void {
+					submitTime(event.elapsedTime,event.billingType,event.comments);	
+				});
+				
+				addElement(timePostDrawer);
+				
+				//create projects, tasks, & subtasks drawer
+				for each(var type:String in ['projects','tasks','subTasks','checklistTasks']) {
+					
+					var drawer:DrawerList	= new DrawerList();
+					
+					drawer.id				= type;
+					drawer.addEventListener(DrawerEvent.OPEN,onDrawerOpen);
+					addElement(drawer);
+					
+					var drawerName:String 	= type + "Drawer";
+					me[drawerName]			= drawer;
+					
+				}
+				
+				//refresh buttons
+				projectsDrawer.btnRefresh.addEventListener(MouseEvent.MOUSE_DOWN, function():void { 
+					loadProjects(); 
+				});
+				
+				tasksDrawer.btnRefresh.addEventListener(MouseEvent.MOUSE_DOWN, function():void {
+					selectedProject.resetTasks();
+					selectedProject.resetChecklists();
+					loadTasks(); 
+				});
+				
+				subTasksDrawer.btnRefresh.addEventListener(MouseEvent.MOUSE_DOWN, function():void {
+					selectedTask.resetSubTasks();
+					loadSubTasks(); 
+				});
+				
+				
+				checklistTasksDrawer.btnRefresh.addEventListener(MouseEvent.MOUSE_DOWN, function():void {
+					selectedChecklist.resetSubTasks();
+					loadChecklistTasks();
+				});
+				
+				//handle select of project, tasks, & subtasks on drawer list
+				projectsDrawer.mainList.addEventListener(MouseEvent.CLICK,projectSelected);
+				tasksDrawer.mainList.addEventListener(MouseEvent.CLICK,taskSelected);
+				subTasksDrawer.mainList.addEventListener(MouseEvent.CLICK,subTaskSelected);
+				checklistTasksDrawer.mainList.addEventListener(MouseEvent.CLICK,checklistTaskSelected);
+				
+				//setup checklist/list toggle button on the tasks window
+				tasksDrawer.dualButton.button1.addEventListener(MouseEvent.CLICK,function():void {
+					toggleChecklistList(false);
+				});
+				
+				tasksDrawer.dualButton.button2.addEventListener(MouseEvent.CLICK,function():void {
+					toggleChecklistList(true);
+				});
+				
+				checklistTasksDrawer.currentState = "checklist";
+				
+				//if the profile has been loaded successfully, load projects
+				if(Profile.getInstance().isValid()) {
+					
+					loadProjects();
+					
+					//setup the dual button defaults (also set on profile instance set
+					tasksDrawer.dualButton.button1.label 	= Profile.getInstance().getDataAdapter().getTaskName();
+					tasksDrawer.dualButton.button2.label 	= "Checklists";
+					
+				} else {
+					
+					
+					//there are no profiles, starting over
+					setTimeout(function():void {
+						//btnProfiles.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+						showProfilesDrawer();
+					},1000);
+				}
+				
+				
+				//registeration window
+				registerDrawer 				= new RegisterDrawer();
+				registerDrawer.visible		= false;
+				registerDrawer.anchorParent = btnSettings;
+				registerDrawer.addEventListener(DrawerEvent.OPEN,onDrawerOpen);
+				
+				addElement(registerDrawer);
+			}
+			
+			public function getVersion():Number {
+				
+				var descriptor:XML 	= NativeApplication.nativeApplication.applicationDescriptor;
+				var ns:Namespace 	= descriptor.namespaceDeclarations()[0];
+				
+				return +descriptor.ns::version;
+			}
+			
+			public function loadProjects():void {
+				
+				var profile:Profile 	= Profile.getInstance();
+				
+				
+				//if a profile is selected we load projects
+				if(profile != null) {
+					HttpServiceRefresh.cancelAllRequests();
+					if(projectsDrawer != null) {
+						projectsDrawer.showProgress('Loading Projects...');	
+					}
+					
+					profile.getProjects(projectsLoaded, remoteObjectFailedToLoad);
+					return;
+				}
+				
+				
+				//if we are showing the projects drawer and projects are already loaded
+				//we want to try and pre-emptively load all tasks
+				if(this._projects != null && this._projects.length > 0) {
+					for(var index:Number=0; index<this._projects.length; index++) {
+						this._projects[index].getTasks(null,remoteObjectFailedToLoad);	
+						this._projects[index].getChecklists(null,remoteObjectFailedToLoad);	
+					}
+					
+				}
+			}
+			
+			public function projectsLoaded(projects:Array):void {
+			
+				this._projects 		= projects;
+				
+				//loop through each project and load tasks so it will update in the
+				//drawer list and look super cool
+				for(var index:Number=0; index<projects.length; index++) {
+					projects[index].getTasks(null,remoteObjectFailedToLoad);	
+					projects[index].getChecklists(null,remoteObjectFailedToLoad);
+				}
+				
+				//hide progress and set results if the projects drawer exist
+				if(projectsDrawer != null) {
+					projectsDrawer.hideProgress();
+					projectsDrawer.setItems(this._projects);
+				}
+				
+				
+			}
+			
+			public function showProjectsDrawer(event:MouseEvent = null):void {
+
+				//projects
+				projectsDrawer.anchorParent = btnProjects;
+			
+				if(this._projects == null) {
+					loadProjects();
+				} else {
+					projectsDrawer.setItems(this._projects);
+				}
+				
+				if(projectsDrawer.visible) {
+					projectsDrawer.close();
+				} else {
+					projectsDrawer.open();
+				}
+				
+				
+			}
+			
+			public function projectSelected(event:MouseEvent):void {
+				
+				if(projectsDrawer.selectedIndex > -1) {
+					
+					//save the selected project from the list to our public var
+					selectedProject 		= projectsDrawer.selectedItem.getListItemObject() as Project
+					selectedTask			= null;
+					selectedChecklist		= null;
+					selectedRemoteObject 	= selectedProject;
+					btnProjects.label		= selectedProject.name;
+					
+					//cancel all requests so the tasks for the selected project moves quicker
+					if(!selectedProject.areTasksLoaded()) {
+						HttpServiceRefresh.cancelAllRequests();
+					}
+					
+					//if there are tasks, show the tasks drawer
+					if(selectedProject.hasTasks() || selectedProject.hasChecklists()) {
+						this.currentState = 'projectSelectedWithTasks';
+						showTasksDrawer();
+						
+					} else {
+						this.currentState = 'projectSelectedWithoutTasks';
+						projectsDrawer.close();
+					}
+					
+					
+				}
+				
+			}
+			
+			public function showTasksDrawer(event:MouseEvent = null):void {
+				
+				if(selectedProject != null) {
+					
+					if(tasksDrawer.visible) {
+						tasksDrawer.close();
+						return;
+					}
+	
+					//set the task name (ticket or task) if no task is already selected
+					if(selectedTask == null && selectedChecklist == null) {
+						btnTasks.label 	= Profile.getInstance().getDataAdapter().getTaskName();
+					} 
+					
+					
+					//show the tasks drawer
+					setTimeout(function():void {
+						tasksDrawer.anchorParent	= btnTasks;
+						tasksDrawer.show();
+					},0);
+					
+					//if the selectedchecklist is set, show the checklists instead of tasks 
+					if(selectedChecklist != null) {
+						toggleChecklistList(true);	
+					} else {
+						loadTasks();
+					}
+					
+					
+				}
+			}
+			
+			public function loadTasks():void {
+				var profile:Profile 	= Profile.getInstance();
+				
+				if(selectedProject != null) {
+					
+					tasksDrawer.showProgress('Loading ' + profile.getDataAdapter().getTaskName() + '...');
+					
+					this.selectedProject.getTasks(tasksLoaded, remoteObjectFailedToLoad);
+					tasksDrawer.dualButton.visible = false;
+					
+					//show checklist dual button if there are checklists on the selected project
+					this.selectedProject.getChecklists(function(checklists:Array):void {
+						tasksDrawer.dualButton.visible = (checklists.length > 0);
+						tasksDrawer.dualButton.currentState = "button1";
+					},remoteObjectFailedToLoad);
+				} 
+			}
+			
+			public function tasksLoaded(tasks:Array):void {
+				
+				if(tasks.length == 0) {
+					tasks.push(Task.getDummy("No " + Profile.getInstance().getDataAdapter().getTaskName() + " found."));
+				}
+				
+				tasksDrawer.setItems(tasks);
+				
+				//load all the tasks sub tasks
+				if(Profile.getInstance().getDataAdapter().getTaskDepth() > 1) {
+					selectedProject.getTasks(function(tasks:Array):void {
+						for (var i:Number=0; i < tasks.length; i++){
+							tasks[i].getSubTasks();
+						}
+					},remoteObjectFailedToLoad);
+				}
+				
+				
+				tasksDrawer.hideProgress();
+				
+			}
+			
+			
+			public function taskSelected(event:MouseEvent):void {
+		
+				//keeps mouse event from trying to bubble through a list that has been removed
+				event.stopImmediatePropagation();
+			
+				//incase there was a misclick
+				if(tasksDrawer.selectedItem == null) {
+					return;
+				}
+				
+				var selectedItem:Remote 	= tasksDrawer.selectedItem.getListItemObject() as Remote;
+				
+				//if this is a checklist, run checklistSelected
+				if(selectedItem.type == Remote.TYPE_CHECKLIST) {
+					checklistSelected(event);
+					return;
+				}
+				
+				var task:Task = selectedItem as Task;
+				
+				//if this is a dummy list item, just bail out
+				if(task.id == '-1') {
+					
+					//set state to projects so only project state is showing
+					this.currentState = 'projectSelectedWithoutTasks';
+					
+					//hide the tasks drawer
+					tasksDrawer.close();
+					
+					//clear our currently selecte task since none exist for this project
+					selectedTask		= null;
+					return;
+				}
+				
+				selectedTask			= task;
+				selectedRemoteObject	= task;
+				selectedChecklist		= null;
+				btnTasks.label			= task.name;
+				
+				
+				
+				
+				//hide the tasks drawer first
+				tasksDrawer.close();
+				
+				//if there are sub tasks show subTasks drawer
+				if(Profile.getInstance().getDataAdapter().getTaskDepth() > 1) {
+					if(selectedTask.hasSubTasks()) {
+						currentState = 'taskSelectedWithSubTasks';
+						//reset subtasks button label
+						if(btnSubTasks) {
+							btnSubTasks.label		= Profile.getInstance().getDataAdapter().getSubTaskName();
+						}
+						HttpServiceRefresh.cancelAllRequests();
+						showSubTasksDrawer();
+					} else {
+						currentState = 'taskSelectedWithoutSubTasks';
+					}
+				}
+				
+			}
+			
+			
+			public function loadSubTasks(event:MouseEvent = null):void {
+				
+				if(selectedTask != null) {
+					
+					subTasksDrawer.showProgress('Loading ' + Profile.getInstance().getDataAdapter().getSubTaskName() + '...');
+					this.selectedTask.getSubTasks(subTasksLoaded, remoteObjectFailedToLoad);
+					
+				}
+			}
+			
+			public function showSubTasksDrawer(event:MouseEvent = null):void {
+				
+				if(subTasksDrawer.visible) {
+					subTasksDrawer.close();
+					return;
+				}
+				
+				
+				if(selectedTask != null) {
+					
+					subTasksDrawer.anchorParent = btnSubTasks;
+					setTimeout(function():void {
+						
+						if(Profile.getInstance().getUseCheckboxesForSubTasks()) {
+							subTasksDrawer.currentState = "checklist";
+						} else {
+							subTasksDrawer.currentState = "normal";
+						}
+						
+						subTasksDrawer.open();
+					},0);
+					
+					loadSubTasks();
+					
+				} else if(selectedChecklist != null) {
+					showCheckListTasksDrawer(event);
+				}
+			}
+			
+			public function subTasksLoaded(tasks:Array):void {
+				
+				if(tasks.length == 0) {
+					tasks.push(SubTask.getDummy("No " + Profile.getInstance().getDataAdapter().getSubTaskName() + " found."));
+				}
+				
+				subTasksDrawer.setItems(tasks);	
+				subTasksDrawer.hideProgress();
+			}
+
+			public function subTaskSelected(event:MouseEvent):void {
+			
+				event.stopImmediatePropagation();
+			
+				
+				if(subTasksDrawer.selectedIndex == -1) {
+					return;
+				}
+				
+				var task:SubTask 		= subTasksDrawer.selectedItem.getListItemObject() as SubTask;
+				
+				
+				//if this is a dummy list item, just bail out
+				if(task.id == '-1') {
+					this.currentState 	= 'taskSelectedWithoutSubTasks';
+					selectedSubTask 	= null;
+					subTasksDrawer.close();
+					return;
+				}
+				
+				//if they are rendering the subtask window as a checkbox
+				if(event.target.id == 'checkBox') {
+					if (task.completed == true) {
+						task.markAsOpen(null, remoteObjectFailedToLoad);
+					} else {
+						task.markAsCompleted(null, remoteObjectFailedToLoad);
+					}
+					
+					return;
+				}
+				
+				selectedSubTask			= task;
+				selectedRemoteObject	= task;
+				
+				
+				btnSubTasks.label		= task.name;
+				
+				subTasksDrawer.close();
+				
+			}
+			
+			public function checklistSelected(event:MouseEvent):void {
+				
+				var checklist:Checklist 	= tasksDrawer.selectedItem.getListItemObject() as Checklist;
+				
+				selectedRemoteObject		= checklist;
+				selectedChecklist			= checklist;
+				selectedTask				= null
+					
+				//set the button name
+				btnTasks.label				= checklist.name;
+				
+				//set the state
+				currentState				= "taskSelectedWithSubTasks";
+				
+				showCheckListTasksDrawer(event);
+				
+			}
+			
+			public function showCheckListTasksDrawer(event:MouseEvent):void {
+				
+				if(checklistTasksDrawer.visible) {
+					checklistTasksDrawer.close();
+					return;
+				}
+				
+				if(selectedChecklistTask == null) {
+					btnSubTasks.label = "Checklist";
+				}
+				
+				setTimeout(function():void {
+					checklistTasksDrawer.anchorParent = btnSubTasks;
+					checklistTasksDrawer.open();
+				},0);
+				
+				loadChecklistTasks();
+			}
+			
+			
+			public function loadChecklistTasks():void {
+				
+				checklistTasksDrawer.showProgress("Loading Checklist Items");
+				
+				selectedChecklist.getTasks(function(tasks:Array):void {
+					checklistTasksDrawer.hideProgress();
+					checklistTasksDrawer.setItems(tasks);
+				});
+			}
+			
+			public function checklistTaskSelected(event:MouseEvent):void {
+				
+				event.stopImmediatePropagation();
+				
+				var task:ChecklistTask 		= checklistTasksDrawer.selectedItem.getListItemObject() as ChecklistTask;
+				
+				selectedRemoteObject		= task;
+				selectedChecklistTask		= task;	
+				
+				if(event.target.id == 'checkBox') {
+					if (task.completed == true) {
+						task.markAsOpen();
+					} else {
+						task.markAsCompleted();
+					}
+					
+					return;
+				}
+				
+				btnSubTasks.label			= task.name;
+				checklistTasksDrawer.close();
+				
+				
+			}
+			
+			public function jumpTo(remoteObject:Remote = null):void {
+				
+				if(remoteObject == null) {
+					remoteObject = this.selectedRemoteObject;
+				}
+				
+				if(remoteObject != null) {
+					var urlReq:URLRequest 				= new URLRequest(remoteObject.permaLink);
+					navigateToURL(urlReq, "_blank");
+					
+					DrawerGroup.closeAllDrawers();
+				}
+			}
+			
+			public function markObjectAsCompleted(event:MouseEvent = null):void {
+				
+				if(selectedRemoteObject != null) {	
+					
+					DrawerGroup.closeAllDrawers();
+					
+					var confirmation:Confirmation 	= new Confirmation();
+					confirmation.anchorParent 		= btnComplete;
+					this.addElement(confirmation);
+					
+					confirmation.mainLabel.text		= "Mark " + selectedRemoteObject.getType() + " as complete?";
+					confirmation.btnOk.addEventListener(MouseEvent.CLICK, function():void {
+
+						confirmation.showProgress('');
+					
+						selectedRemoteObject.markAsCompleted(function():void {
+							confirmation.close();
+							refreshDrawersAfterRemoteObjectStatusChange(selectedRemoteObject);
+						},remoteObjectFailedToLoad);
+						
+						
+					});
+					
+					setTimeout(function():void {
+						confirmation.open();
+					},0);
+					
+				}
+			}
+			
+			public function showProfilesDrawer(event:MouseEvent = null):void {
+				profilesDrawer.anchorParent = btnProfiles;
+				profilesDrawer.open();
+			}
+			
+			public function showSettingsDrawer(event:MouseEvent = null):void {
+				
+				if(Profile.getInstance().isValid()) {
+					settingsDrawer.anchorParent = btnSettings;
+					settingsDrawer.open();
+				} else {
+					Alert.show("You must setup a profile before you can customize the timer","",4,Util.timerBar);
+				}
+			}
+			
+			/**
+			 * Called after any remote object is marked as complete or marked as open
+			 * refreshes the drawer it came from and handles button hiding
+			 */
+			public function refreshDrawersAfterRemoteObjectStatusChange(remoteObject:Remote):void {
+				if(remoteObject.completed == true) {
+					switch(remoteObject.type) {
+						
+						//if a project was completed
+						case Remote.TYPE_PROJECT:
+							//hide tasks and subtask button
+							this.currentState 			= "start";
+							this.selectedRemoteObject 	= null;
+							this.selectedProject 		= null;
+							this.selectedChecklist		= null;
+							this.selectedChecklistTask 	= null;
+							this.selectedTask			= null;
+							this.selectedSubTask		= null;
+							btnProjects.label			= "Projects";
+							
+							if(btnTasks) {
+								btnTasks.label				= Profile.getInstance().getDataAdapter().getTaskName();
+							}
+							
+							loadProjects();
+							
+							break;
+						
+						case Remote.TYPE_TASK:
+						case Remote.TYPE_CHECKLIST:	
+							this.currentState			= "projectSelectedWithTasks";
+							
+							this.selectedRemoteObject 	= this.selectedProject;
+							this.selectedChecklist		= null;
+							this.selectedChecklistTask 	= null;
+							this.selectedTask			= null;
+							this.selectedSubTask		= null;
+							
+							btnTasks.label				= Profile.getInstance().getDataAdapter().getTaskName();
+							loadTasks();
+							
+							break;
+						
+						case Remote.TYPE_SUBTASK:
+						case Remote.TYPE_CHECKLIST_TASK:
+							
+							this.currentState			= 'taskSelectedWithSubTasks';
+							this.selectedRemoteObject 	= (this.selectedTask != null) ? this.selectedTask : this.selectedChecklist;
+							this.selectedChecklistTask 	= null;
+							this.selectedSubTask		= null;
+							
+							btnSubTasks.label			= Profile.getInstance().getDataAdapter().getSubTaskName();
+							loadSubTasks();
+							break;
+						
+					}
+				}
+			}
+			
+			
+			
+			public function resetTimer():void {
+				stopTimer(false);
+				timer.reset();
+			}
+			
+			public function startTimer():void {
+				btnStart.visible 	= false;
+				btnStop.visible 	= true;
+				
+				timer.start();
+			}
+			
+			public function stopTimer(postOnStop:Boolean = false):void {
+				
+				btnStart.visible 	= true;
+				btnStop.visible 	= false;
+				timer.stop();
+				
+				if(!postOnStop || selectedRemoteObject == null) {
+					return;
+				}
+				
+				showTimePostForm();
+				
+			}
+			
+			public function showTimePostForm():void {
+								
+				DrawerGroup.closeAllDrawers();
+				timePostDrawer.anchorParent = btnPost;
+
+				//set the time to submit
+				timePostDrawer.setTime(timer.getElapsedTime());
+				
+				setTimeout(function():void {
+					timePostDrawer.show();
+				},0);
+			}
+			
+			
+			public function submitTime(elapsedTime:Number, billingType:Number = 0, comments:String = ""):void {
+				
+				timePostDrawer.showProgress("Submitting Time...");
+
+				
+				Profile.getInstance().postTimeForRemoteObject(selectedRemoteObject,elapsedTime, billingType, comments,function():void {
+					timePostDrawer.hideProgress();
+					timePostDrawer.close();
+					resetTimer();
+				}, function():void {
+					Alert.show("An error occurred while submitting time, you should try again.","",4,Util.timerBar);
+					timePostDrawer.hideProgress();
+				});
+				
+			}
+			
+			public function place():void {
+				
+				//since this animates much better if the window fills the screen
+				//and we animate the timerBar skinnablecomponent, we set timer bar
+				//to the location and size of the window, then set the window to be
+				//full screen, then animate timerbar into position
+				var selectedScreen:Screen 	= Screen.screens[Preferences.getInstance().getSelectedScreenIndex()];
+				
+				//calculate destination size
+				var height:Number			= 25;
+				var top:Number				= (Preferences.getInstance().getScreenPosition() == Preferences.POSITION_TOP) ? 0 : (selectedScreen.visibleBounds.height - height);
+
+				
+				//if first run
+				if(_firstRun) {
+					
+					this.width				= 40;
+					this.height				= 25;
+					
+					//set native window to be full screen on the selected monitor
+					timerBar.x					= this.nativeWindow.x - selectedScreen.visibleBounds.x;
+					timerBar.y					= this.nativeWindow.y - selectedScreen.visibleBounds.y;
+					timerBar.width				= this.nativeWindow.width;
+					timerBar.height				= this.nativeWindow.height;
+					
+					_firstRun = false;
+				} 
+				//timerbar placement
+				else {
+					
+					timerBar.top	= '';
+					timerBar.bottom = '';
+					
+					timerBar.x					+= (this.nativeWindow.x - selectedScreen.visibleBounds.x);
+					timerBar.y					+= (this.nativeWindow.y - selectedScreen.visibleBounds.y);
+
+				}
+				
+	
+				Util.copyBounds(selectedScreen.visibleBounds, nativeWindow);
+			
+				
+				//hide the main box so we can animate it in after the thing is placed
+				mainBox.visible = false;
+		
+				
+				Util.animateProperties(timerBar,{
+					width: this.width,
+					height: height,
+					x: 0,
+					y: top,
+					alpha: 1
+				},{
+					duration: 1,
+					completeCallback: function():void {
+						mainBox.visible = true;
+					}
+				});
+				
+
+			}
+			
+			public function handleMouseDown(event:MouseEvent):void {
+				
+				//check if we are in the middle of the bar
+				systemManager.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove, true);
+				systemManager.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp, true);
+		
+				
+				_dragStart 		= new Point(nativeWindow.bounds.x + event.stageX, nativeWindow.bounds.y + event.stageY);
+				
+			}
+			
+			public function handleMouseUp(event:MouseEvent):void {
+			
+				systemManager.removeEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove, true);
+				systemManager.removeEventListener(MouseEvent.MOUSE_UP, handleMouseUp, true);
+				
+				if(this.currentState == 'dragging') {
+				
+					
+					//determine which screen the box is on
+					var globalLocation:flash.geom.Rectangle	= new flash.geom.Rectangle();
+					var globalPoint:Point	= Util.getGlobalPosition(dragBar);
+					
+					globalLocation.x		= globalPoint.x;
+					globalLocation.y		= globalPoint.y;
+					globalLocation.width	= dragBar.width;
+					globalLocation.height	= dragBar.height;
+					
+					var newScreen:Screen = Screen.getScreensForRectangle(globalLocation)[0];
+					
+					if(newScreen != null) {
+						
+						//use the first screen, find it's index from all the screens we have available
+						var allScreens:Array = Screen.screens;
+						for(var index:Number = 0; index < allScreens.length; index++) {
+							if(allScreens[index].visibleBounds.x == newScreen.visibleBounds.x &&
+								allScreens[index].visibleBounds.y == newScreen.visibleBounds.y) {
+								Preferences.getInstance().setRecord('selectedScreen',index.toString());
+							}
+						}
+						
+						//set top or bottom
+						var topOfScreen:Number = newScreen.visibleBounds.top;
+						if(nativeWindow.y > (topOfScreen + newScreen.visibleBounds.height/2)) {
+							Preferences.getInstance().setRecord('screenPosition',Preferences.POSITION_BOTTOM);
+						} else {
+							Preferences.getInstance().setRecord('screenPosition',Preferences.POSITION_TOP);
+						}
+					
+					}
+					
+					//store the drag box location
+					var bounds:Rect 	= new Rect();
+					bounds.x			= dragBar.x;
+					bounds.y			= dragBar.y;
+					bounds.width		= dragBar.width;
+					bounds.height		= dragBar.height;
+					
+					dragBar.visible		= false;
+					
+					//switch back to the right state
+					this.currentState 	= this._lastState;
+					
+					//hide content box so it doesn't overflow
+					this.visible = false;
+					
+					//set timebar where the drag box was
+					timerBar.x			= bounds.x;
+					timerBar.y			= bounds.y;
+					timerBar.width		= bounds.width;
+					timerBar.height		= bounds.height;
+					
+					//position the bar on the screen
+					place();
+					
+					//show window after a second because otherwise it flickers
+					setTimeout(function():void{
+						visible		= true;
+					},50);
+					
+					
+				}
+			
+			}
+				
+			public function handleMouseMove(event:MouseEvent):void {
+
+				_dragCurrent 	= new Point(nativeWindow.bounds.x + event.stageX, nativeWindow.bounds.y + event.stageY);
+	
+				if(!event.buttonDown || this.currentState == 'dragging' || !event.buttonDown) {
+					return;
+				}
+				
+				/**
+				 * DRAG START
+				 */
+				DrawerGroup.closeAllDrawers();
+				
+				//event.stageX is changing later in the method, so store it now
+				var eventX:Number = event.stageX;
+				var eventY:Number = event.stageY;
+	
+				//save current state so we can switch back to it after we let god
+				_lastState 		= this.currentState;
+				
+				
+				//prep for drag by hiding this window and showing drag container
+				//then animate drag container to center on mouse
+				var top:Number		= timerBar.y;
+				currentState 		= 'dragging';
+				dragBar.height		= 25;
+				dragBar.width		= this.width;
+				dragBar.y			= top;
+				dragBar.visible		= true;
+				
+				//there can be a few pixels difference between now and when the drag is initiated
+				var lastDrag:Point		= _dragCurrent;
+				_dragXDelta 			= eventX;
+				
+				
+				//move native window top under mouse and move the timer bar to the top
+				
+				
+				
+				//position the drag bar where it should go (top or bottom)
+				if(Preferences.getInstance().getRecord('screenPosition',Preferences.POSITION_TOP) == Preferences.POSITION_TOP) {
+					dragBar.y			= 0;
+				} else {
+					nativeWindow.height 	= 100;
+					dragBar.y			= nativeWindow.height - dragBar.height;
+					nativeWindow.y			+= eventY - event.localY;
+				}
+								
+				nativeWindow.startMove();
+			
+	
+				//set height to where we want the box to be in the end	
+				Util.animateProperties(dragBar, {
+					y: 		8,
+					x:		{from: 0, to: eventX - 86/2},
+					width: 	{from: nativeWindow.width, to: 86},
+					height: {from: 25, to: 86}
+				},{duration: .2 });
+
+			}
+			
+			private var _loggerWindow:LoggerWindow = null;
+			public function showLoggerWindow(event:KeyboardEvent):void {
+				
+				var key:String = String.fromCharCode(event.charCode).toLowerCase();
+				
+				if(key == 'l' && event.controlKey) {
+					
+					if(_loggerWindow != null && _loggerWindow.drawerStatus == Drawer.STATUS_OPEN) {
+						return;	
+					}
+					
+					_loggerWindow = new LoggerWindow();
+					_loggerWindow.draggable = true;
+					_loggerWindow.open();
+				}
+			}
+			
+			
+			private var _errorShowing:Boolean = false;
+			public function remoteObjectFailedToLoad(event:*):void {
+				
+				Logger.log("Error: " + event);
+				
+				if(_errorShowing) {
+					Logger.log("connection error ignored because alert dialog already visible.");
+					return;
+				}
+				
+				//hide all drawers
+				Drawer.hideAllDrawers();
+				
+				var managementSystemName:String = Profile.getInstance().getDataAdapter().getName();
+				Alert.show("An error occurred while trying to connect to " + managementSystemName + '. Please check your internet connection, your profile settings, and try again.', 'Connection Error',4,Util.timerBar,function():void {
+					//showProfilesDrawer();
+					_errorShowing = false;
+				});
+				
+				_errorShowing = true;
+			}
+			
+			/**
+			 * Handles showing checklist list or the task list (in the task drawer)
+			 * called from the dual button
+			 */
+			public function toggleChecklistList(show:Boolean):void {
+				
+				
+				if(show) {
+					
+					//set the drawer list to be the checklists array
+					selectedProject.getChecklists(function(checklists:Array):void {
+						tasksDrawer.setItems(checklists);
+					});	
+					
+					tasksDrawer.dualButton.currentState = 'button2';
+					
+				} else {
+					
+					//drop in the tasks array
+					selectedProject.getTasks(function(tasks:Array):void {
+						tasksDrawer.setItems(tasks);
+					});	
+					
+					tasksDrawer.dualButton.currentState = 'button1';
+				}
+			}
+
+			/**
+			 * Controls hiding and showing bar if settings are set
+			 */
+			protected var isBarHiding:Boolean = false;
+			protected function window1_mouseMoveHandler(event:MouseEvent):void {
+				
+				//don't hide on drag or if settings do no permis
+				if(currentState == 'dragging' || Preferences.getInstance().getRecord('autoHide', '0') == '0') {
+					return;
+				}
+				
+				var showZoneTop:Number 		= (Preferences.getInstance().getScreenPosition() == Preferences.POSITION_TOP) ? 0 : this.height - timerBar.height/3;
+				var showZoneBottom:Number 	= (Preferences.getInstance().getScreenPosition() == Preferences.POSITION_TOP) ? showZoneTop + timerBar.height/3 : this.height;
+				
+				//trace('eventY: ' + event.stageY + ", top: " + showZoneTop + ", bottom: " + showZoneBottom);
+				//trace(isBarHiding);
+				//trace(isBarHiding && event.stageY < showZoneTop && event.stageY > showZoneBottom);
+				
+				if(!isBarHiding && DrawerGroup.getOpenDrawerCount() == 0 && (event.stageY < showZoneTop || event.stageY > showZoneBottom + 20)) {
+					isBarHiding = true;
+					hideTimer();
+				} else if(isBarHiding && event.stageY > showZoneTop && event.stageY < showZoneBottom) {
+					isBarHiding = false;
+					showTimer();
+				} 
+				
+			}
+			
+			protected var showHideTimer:LinearGo = null;
+			protected function hideTimer():void {
+				
+				if(showHideTimer) {
+					showHideTimer.stop();
+				}
+				
+				
+				var destinationY:Number = (Preferences.getInstance().getScreenPosition() == Preferences.POSITION_TOP) ? timerBar.height * -1 : this.height + timerBar.height;
+				
+				//if we are not active, hide right away
+				if(NativeApplication.nativeApplication.activeWindow == null) {
+					
+					timerBar.y = destinationY;
+					return;
+				}
+				
+				//else animate
+				showHideTimer = Util.animateProperties(timerBar,{
+					y: destinationY
+				},{
+					duration: 0.5,
+					completeCallback:function():void {
+						timerBar.y = destinationY;
+					}
+				})
+				
+				
+			}
+			
+			protected function showTimer():void {
+				
+				if(showHideTimer) {
+					showHideTimer.stop();
+				}
+				
+				var destinationY:Number = (Preferences.getInstance().getScreenPosition() == Preferences.POSITION_TOP) ? 0 : this.height - timerBar.height;
+				
+				//if we are not active, hide right away
+				if(NativeApplication.nativeApplication.activeWindow == null) {
+					//trace('showing now');
+					timerBar.y = destinationY;
+					return;
+				}
+				
+				showHideTimer = Util.animateProperties(timerBar,{
+					y: destinationY
+				},{
+					duration: 0.5,
+					completeCallback:function():void {
+						timerBar.y = destinationY;
+					}
+				})
+			}
+			
+			private var _idleHandled:Boolean = false;
+			protected function handleInactive(e:Event):void {
+				
+				//don't handle idle more than once or bail if timer is not running or if it's set to 0 == unlimited
+				if(_idleHandled || !timer.running || Preferences.getInstance().getRecord('idleTimeout','0') == '0') {
+					return;
+				}
+				
+				stopTimer();
+				_idleHandled = true;
+				Alert.show("The timer has been paused due to inactivity.","Timer Paused",4,Util.timerBar,function():void {
+					_idleHandled = false;
+				});
+		
+			
+			}
+			
+			public function showRegisterDrawer():void {
+				registerDrawer.anchorParent = btnBuy;
+				setTimeout(function():void {
+					registerDrawer.open();
+				},0);
+			}
+
+
+			protected function window1_mouseOutHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				//trace(event);
+			}
+
+
+			protected function window1_closeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				//Util.mainWindow.close();
+				NativeApplication.nativeApplication.exit();
+			}
+
+		]]>
+	</fx:Script>
+
+<s:SkinnableContainer id="timerBar" skinClass="components.skins.TimerBarSkin"  excludeFrom="dragging">
+	
+	<mx:HTML id="adBrowser" width="0" height="0" visible="false" scaleX="0.5" scaleY="0.5" />
+	
+	<s:HGroup paddingTop="1" width="100%">
+		
+		<mx:Spacer width="100%" />
+		
+		
+		<custom:ButtonIcon id="grippieBar" 
+						   icon="@Embed(source='assets/images/grippie.png')" 
+						   height="20"
+						   width="26" 
+						   mouseDown="handleMouseDown(event);"/>
+		
+		<mx:Spacer width="100%" />
+		
+	</s:HGroup>
+
+	
+
+	<s:HGroup id="mainBox" gap="0" showEffect="{showEffect}" width="100%" excludeFrom="dragging">
+		
+		<!-- projects button -->
+		<s:Button skinClass="components.skins.ButtonTimerBarSkin" 
+				  includeIn="start, projectSelectedWithoutTasks, projectSelectedWithTasks, taskSelectedWithoutSubTasks, taskSelectedWithSubTasks, subTaskSelected" 
+				  id="btnProjects"  
+				  label="Projects" 
+				  height="25" 
+				  maxWidth="250"
+				  click="showProjectsDrawer(event);" />
+		
+		<!-- tasks button -->
+		<s:Button skinClass="components.skins.ButtonTimerBarSkin" 
+				  includeIn="projectSelectedWithTasks, taskSelectedWithoutSubTasks, taskSelectedWithSubTasks, subTaskSelected" 
+				  toolTip="{selectedTask.description}"  
+				  id="btnTasks" 
+				  label="Tasks" 
+				  height="25" 
+				  maxWidth="250" 
+				  click="showTasksDrawer(event);"/>
+		
+		<!-- subTasks button -->
+		<s:Button skinClass="components.skins.ButtonTimerBarSkin" 
+				  includeIn="taskSelectedWithSubTasks, subTaskSelected" 
+				  toolTip="{selectedSubTask.description}"
+				  id="btnSubTasks" 
+				  label="Subtasks" 
+				  height="25" 
+				  maxWidth="250"
+				  click="showSubTasksDrawer(event);"/>
+		
+		<mx:Spacer width="10" />
+		
+		<s:Group>
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="left" paddingTop="1" gap="0" />
+			</s:layout>
+			
+			<!-- view project in activecollab (or whatever) -->
+			<custom:ButtonIcon id="btnJumpTo"
+							   icon="@Embed(source='assets/images/mag16x16.png')"
+							   toolTip="View in Browser"
+							   excludeFrom="start,first,dragging"
+							   mouseDown="jumpTo()" />
+			
+			<!-- mark selected object as complete -->
+			<custom:ButtonIcon id="btnComplete"
+							   icon="@Embed(source='assets/images/check16x16.png')"
+							   toolTip="Mark as Complete"
+							   excludeFrom="start,first,dragging"
+							   mouseDown="markObjectAsCompleted(event)" />
+	
+			
+			
+			<!-- profiles button -->
+			<custom:ButtonIcon id="btnProfiles"
+							   height="20"
+							   width="26"
+							   icon="@Embed(source='assets/images/profiles16x16.png')"
+							   toolTip="Manage Profiles"
+							   mouseDown="showProfilesDrawer(event)"/>
+			
+			
+			<!-- settings button -->
+			<custom:ButtonIcon id="btnSettings" 
+							   icon="@Embed(source='assets/images/settings16x16.png')"
+							   height="20"
+							   width="26"
+							   toolTip="Settings"
+							   mouseDown="showSettingsDrawer(event)"/>
+			
+			<!-- buy button -->
+			<custom:ButtonIcon id="btnBuy" 
+							   icon="@Embed(source='assets/images/dollar16x16.png')"
+							   height="20"
+							   width="26"
+							   toolTip="Buy Now"
+							   mouseDown="showRegisterDrawer()"/>
+			
+			
+			
+			<!-- expiration date for beta -->
+			<s:Label paddingLeft="10" 
+					 color="0xFFFFFF" 
+					 text="" 
+					 id="expDate"  
+					 height="25" 
+					 verticalAlign="middle"/>
+			
+		</s:Group>
+		
+		<mx:Spacer width="100%" />
+		
+		<s:HGroup horizontalAlign="right" paddingTop="0" width="100%">
+
+			<!-- timer -->
+			<s:Label excludeFrom="first, dragging" text="00:00:00" id="lblTimer">
+				<s:filters>
+					<!--<s:GlowFilter blurX="10" blurY="10" color="#FFFFFF" alpha="0.9" />-->
+				</s:filters>
+			</s:Label>
+			
+			<s:HGroup paddingTop="1" paddingRight="5" excludeFrom="first, dragging" height="25" gap="0" horizontalAlign="right" top="0">	
+				
+				<custom:ButtonIcon id="btnReset" 
+								   icon="@Embed(source='assets/images/reset16x16.png')" 
+								   height="20"
+								   width="26" 
+								   toolTip="Reset Timer"
+								   mouseDown="resetTimer();"/>
+				
+				<s:BorderContainer width="26" backgroundAlpha="0" borderVisible="false">
+					
+					
+					<custom:ButtonIcon id="btnStop" 
+									   icon="@Embed(source='assets/images/pause16x16.png')" 
+									   height="20"
+									   width="26" 
+									   toolTip="Pause Timer"
+									   mouseDown="stopTimer();" visible="false"/>
+					
+					<custom:ButtonIcon id="btnStart" 
+									   icon="@Embed(source='assets/images/play16x16.png')" 
+									   height="20"
+									   width="26" 
+									   toolTip="Start Timer"
+									   mouseDown="startTimer();"/>
+					
+				</s:BorderContainer>
+				
+				<custom:ButtonIcon id="btnPost" 
+								   icon="@Embed(source='assets/images/timer16x16.png')" 
+								   height="20"
+								   width="26" 
+								   toolTip="Post Time" excludeFrom="start, first, dragging"
+								   mouseDown="stopTimer(true);"/>
+				
+			</s:HGroup>
+			
+		</s:HGroup>
+		
+	</s:HGroup>
+	
+</s:SkinnableContainer>
+
+<!-- The container shown during drag -->
+<s:SkinnableContainer id="dragBar" includeIn="dragging">
+	<s:Rect id="dragRect" left="0" right="0" top="0" bottom="0" radiusX="5" >
+		
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="#2f2f2f" />
+				<s:GradientEntry color="#0b0b0b" />
+			</s:LinearGradient>
+			
+		</s:fill>
+		<s:filters>
+			<s:DropShadowFilter distance="0" blurX="8" blurY="8" />
+		</s:filters>
+	</s:Rect>
+	<mx:Image id="dragImage"  showEffect="{showEffect}" hideEffect="{hideEffect}" left="12" top="2" source="@Embed(source='/assets/images/bgDragBar.png')" />
+</s:SkinnableContainer>
+
+
+	
+</s:Window>
+

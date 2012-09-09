@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" 
+		  width="400" 
+		  height="300" 
+		  systemChrome="none"
+		  backgroundAlpha=".7"
+		  backgroundColor="#000" 
+		  transparent="true"
+		  minimizable="false" 
+		  maximizable="false"
+		  resizable="true"
+		  showStatusBar="true" 
+		  type="lightweight"
+		  minWidth="300"
+		  minHeight="200"
+		  skinClass="components.skins.DrawerSkin" 
+		  resizing="handleResize(event)" 
+		  creationComplete="handleShow(event);">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.refreshdigital.Logger;
+			import com.refreshdigital.Preferences;
+			import com.refreshdigital.Util;
+			
+			import mx.core.IVisualElement;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.graphics.SolidColor;
+			
+			import spark.components.Group;
+			import spark.components.Label;
+			import spark.primitives.Rect;
+
+			
+			public static const MARGIN:Number 		= 5;
+			protected static var _drawers:Array		= [];
+			
+			public static var STATUS_OPENING:String		= 'opening';
+			public static var STATUS_OPEN:String		= 'open';
+			public static var STATUS_CLOSED:String		= 'closed';
+			public static var STATUS_CLOSING:String		= 'closing';
+			
+			public var drawerStatus:String				= Drawer.STATUS_OPENING;
+			
+			//if this window can be drag and placed
+			public var draggable:Boolean = false;
+			
+			//after we close this drawer - we have to animate it shut, then call super.close()
+			private var _callSuperClose:Boolean = false;
+			
+			//we save the width/height on resize, this ignores that
+			private var _ignoreResize:Boolean 	= true;
+			private var _firstRun:Boolean		= true;
+			
+			public var keepOpenDuringHideAll:Boolean = false;
+			
+			//progress
+			private var _progressElement:IVisualElement	= null;
+			
+			//anchor settings
+			public var anchorParent:IVisualElement	= null;
+			public var anchorPosition:Object		= {
+				parent: "center bottom",
+				drawer: "left top"
+			};
+			
+			public function handleShow(event:FlexEvent = null):void
+			{
+				
+				//handle min/max size settings
+				var minHeightOriginal:Number 	= this.minHeight;
+				var minWidthOriginal:Number 	= this.minWidth;
+				
+				this.minHeight 	= 0;
+				this.minWidth 	= 0;
+				
+				drawerStatus = Drawer.STATUS_OPENING;
+				this.visible = false;
+				
+				if(this.closed) {
+					Logger.log("handleShow called on closed window - method aborted");
+					return;
+				}
+				
+				//get the height & width the window needs to be
+				var width:Number 	= (this.resizable) ? Preferences.getInstance().getRecord('width: ' + this.toString(), this.width.toString()) : this.width;
+				var height:Number 	= (this.resizable) ? Preferences.getInstance().getRecord('height: ' + this.toString(), this.height.toString()) : this.height;
+				
+				var resizable:String	= (this.resizable) ? 'resizable' : 'not-resizable';
+				Logger.log("opening " + resizable + " window to: " + width + "x" + height + ' - ' + this.toString());
+				
+				
+				
+				//set the x/y based of the anchorParent
+				if(anchorParent != null) {
+					
+					var positions:Array = this.anchorPosition.parent.split(" ");
+					var left:String		= positions[0];
+					var top:String		= positions[1];
+					
+					
+					//the position we are using as a starting point
+					var position:Point 		= Util.getGlobalPosition(anchorParent);
+					
+					var parentX:Number		= position.x;
+					var parentY:Number		= position.y;
+					
+					//find correct parent x & y
+					switch(left) {
+						
+						case 'center':
+							parentX += this.anchorParent.width/2;
+							break;
+						case 'right':
+							parentX += this.anchorParent.width;
+							break;
+						//left	
+						default:
+
+					}
+					
+					
+					//parent y
+					switch(top) {
+						
+						case 'bottom':
+							parentY += this.anchorParent.height + MARGIN;
+							break;
+						
+						case 'center':
+							parentY += this.anchorParent.height/2;
+							break;
+						
+							//top
+						default:
+							parentY += MARGIN;
+							
+					}
+
+					//place ourselves
+					positions 	= this.anchorPosition.drawer.split(" ");
+					left		= positions[0];
+					top			= positions[1];
+					
+					
+					switch(left) {
+						case 'center':
+							this.nativeWindow.x = parentX - this.width/2;
+							break;
+						case 'right':
+							this.nativeWindow.x = parentX - this.width;
+							break;
+						//left
+						default:
+							this.nativeWindow.x = parentX;
+					}
+					
+					switch(top) {
+						case 'bottom':
+							this.nativeWindow.y = parentY - this.height;
+							break;
+						case 'center':
+							this.nativeWindow.y = parentY - this.height/2;
+							break;
+						//top
+						default:
+							this.nativeWindow.y = parentY;
+					}
+					
+					
+				}
+				
+				//move to front
+				this.orderToFront();
+								
+				this.alpha = 0;
+				this.width = 0;
+				this.height = 0;
+				
+				this.visible	= true;
+				
+				_ignoreResize = true;
+				
+				init();
+	
+				//hide first
+				this.contentGroup.alpha = 0;
+				
+				Util.animateProperties(this, {
+					alpha: 1,
+					width: width,
+					height: height
+				},{
+					duration: .2, 
+					completeCallback: function():void {
+						
+						//start saving size on resizes now
+						_ignoreResize = false;
+						
+						//set back up min width and height
+						minWidth 	= minWidthOriginal;
+						minHeight 	= minHeightOriginal;
+						
+						//show content
+						Util.animateProperties(contentGroup,{
+							alpha: 1
+						},{ duration: .5 });
+						
+						//call after show
+						afterShow();
+					}
+				});
+				
+			}
+			
+			override public function open(openWindowActive:Boolean=true):void {
+				
+				super.open(openWindowActive);
+				
+				//add to global list
+				Drawer._drawers.push(this);
+				
+			}
+			
+			public function show(openWindowActive:Boolean = true):void {
+				this.open(openWindowActive);
+			}
+			
+			public function init():void {
+				
+				//setup draggable
+				if(this.draggable) {
+					this.addEventListener(MouseEvent.MOUSE_DOWN,handleMouseDownForDrag);
+				}
+				
+			}
+			
+			override public function toString():String {
+				var name:String = super.toString().replace(/[^a-z]/gi,'');
+				return name;
+			}
+			
+			public function afterShow():void {
+				drawerStatus = Drawer.STATUS_OPEN;
+			}
+			
+			public function hide():void {
+				this.close();
+			}
+			
+			public static function getFromId(id:String):Drawer {
+				for(var c:Number = 0;c < Drawer._drawers.length; c++) {
+					
+					if(Drawer._drawers[c].toString() == id && 
+						(Drawer._drawers[c].drawerStatus == Drawer.STATUS_OPEN || Drawer._drawers[c].drawerStatus == Drawer.STATUS_OPENING)) {
+						return Drawer._drawers[c];
+					} 
+				}
+				
+				return null;
+			}
+			
+	
+			override public function close():void {
+			
+				drawerStatus = Drawer.STATUS_CLOSING;
+				
+				if(_callSuperClose) {
+					
+					//super closed
+					
+					//remove window from global list since they can't be re-opened
+					var newList:Array = [];
+					for(var c:Number=0;c<Drawer._drawers.length;c++) {
+						if(Drawer._drawers[c] != this) {
+							newList.push(Drawer._drawers[c]);
+						}
+					}
+			
+					Drawer._drawers = newList;
+					
+					drawerStatus	= Drawer.STATUS_CLOSED;
+					super.close();
+					return;
+				}
+			
+				this.minHeight 	= 0;
+				this.minWidth 	= 0;
+				
+				_ignoreResize = true;
+				
+				Preferences.getInstance().setRecord('width: ' + this.toString(), this.width.toString());
+				Preferences.getInstance().setRecord('height: ' + this.toString(), this.height.toString());
+				
+				Util.animateProperties(this, {
+				
+					alpha: 0,
+					width: 0,
+					height: 0
+					
+				},{
+					
+					duration: .5,
+					callbackFunction: function():void {
+					
+						
+						//call close in super class
+						_callSuperClose = true;
+						close();
+					}
+				});
+				
+			}
+			
+			public function handleResize(event:NativeWindowBoundsEvent):void {
+				
+				if(!_ignoreResize) {
+					Logger.log('saving drawer dimensions: ' + this.width.toString() + 'x' + this.height.toString() + ' - ' + this.toString());
+					Preferences.getInstance().setRecord('width: ' + this.toString(), this.width.toString());
+					Preferences.getInstance().setRecord('height: ' + this.toString(), this.height.toString());
+				}
+			}
+			
+			public static function hideAllDrawers():void {
+				setTimeout(function():void {
+					for(var c:Number=0;c<Drawer._drawers.length;c++) {
+						if(Drawer._drawers[c].drawerStatus == Drawer.STATUS_OPEN && !Drawer._drawers[c].keepOpenDuringHideAll) {
+							Drawer._drawers[c].hide();
+						}
+					}
+				},250);
+			}
+
+			public function handleMouseDownForDrag(event:MouseEvent):void {
+				if(this.draggable && event.stageY < 30) {
+					nativeWindow.startMove();
+				}
+			}
+			
+			public function showProgress(message:String = ''):void {
+				if(!this._progressElement) {
+					
+					//setup progress group
+					var group:Group 	= new Group();
+					group.depth 		= 9999;
+					group.alpha			= 0;
+					
+					//drop in background
+					var background:Rect	= new Rect();
+					background.left		= group.left 	= 0;
+					background.right	= group.right 	= 0;
+					background.top		= group.top		= 0;
+					background.bottom	= group.bottom 	= 0;
+					background.depth	= 1;
+					background.fill		= new SolidColor(0x000000,.7);
+					background.radiusX	= 10;
+					
+					group.addElement(background);
+					
+					//drop in progress flash component
+					var progress:Progress 	= new Progress();
+					progress.depth 			= 2;
+					progress.left 			= 10;
+					progress.top 			= 10;
+					
+					group.addElement(progress);
+					
+					//drop in label
+					var progressLabel:Label = new Label();
+					
+					progressLabel.setStyle("textAlign","center");
+					progressLabel.setStyle("color",0xFFFFFF);
+					progressLabel.setStyle("fontSize",'14');
+					progressLabel.setStyle("fontWeight",'bold');
+					
+					progressLabel.height	= 100;
+					progressLabel.depth		= 2;
+					progressLabel.left 		= 0;
+					progressLabel.right 	= 0;
+					
+					group.addElement(progressLabel);
+					
+					//save the group as our "progress element"
+					this._progressElement 	= group as IVisualElement;
+					
+					//add progress element to drawer
+					this.addElement(this._progressElement);
+				}
+				
+				var progressGroup:Group = this._progressElement as Group;
+				var prog:Progress		= progressGroup.getElementAt(1) as Progress;
+				var label:Label			= progressGroup.getElementAt(2) as Label;
+				
+				if(message.length > 0) {
+					label.text 		= message;
+				}
+				
+				progressGroup.visible	= true;
+				placeProgress();
+				
+				Util.animateProperties(this._progressElement,{
+					alpha: { from:0, to:1 }
+				},{
+					duration: .5,
+					completeCallback: function():void {
+						placeProgress();
+					}
+				});
+				
+			}
+			
+			public function placeProgress():void {
+				
+				if(this._progressElement != null) {
+					
+					if (this._progressElement.visible) {
+						
+						//show group and set alpha to 0 so it can fade in
+						var progressGroup:Group = this._progressElement as Group;
+						
+						//place entire progress
+						progressGroup.left 		= 0;
+						progressGroup.top		= 0;
+						progressGroup.bottom	= 0;
+						progressGroup.right		= 0;
+						
+						//place progress swf
+						var prog:Progress	= progressGroup.getElementAt(1) as Progress;
+						prog.top 			= height/2 - prog.height;
+						prog.left 			= width/2 - (prog.width/2);
+						
+						//place the label
+						var label:Label			= progressGroup.getElementAt(2) as Label;
+						label.top				= prog.top + prog.height + 10;
+						
+					} 
+						//if the progress isn't visible, shrink it out of the way
+						//so it doesn't intercept clicks
+					else {
+						this._progressElement.width = 0;
+						this._progressElement.height = 0;
+					}
+				}
+			}
+			
+			
+			public function hideProgress():void {
+				if(this._progressElement) {
+					this._progressElement.visible = false;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+</s:Window>
