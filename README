@@ -1,3 +1,13 @@
 In an effort to keep a fun idea alive, it is now open sourced. Visit http://timer.refreshdigital.com for a sales pitch.
 
 There is no documentation, probably poor comments, but maybe someone will come in and make it right =)
+
+Take a look at com.refreshdigital.DataAdapter.IDataAdapter to see how the interface on how to connect to new services. Right now only Basecamp and activeCollab 2 are supported.
+
+The DataAdapter class handles all communication, from getting tasks and subtasks, to submitting time. This was done in an attempt to consolidate all logic pertaining to 3rd party services in one place.
+
+But, there is still some GUI work that would need to be done for each new DataAdapter and I'd love someone to come along and improve how it's done now (inside of Profiles.mxml).
+
+A user can save many Profiles, each holds credentials and other settings the DataAdapter uses. The Profile class needs to be built out (right now it has properties like "baseCampUsername") so as to not have to be updated every time a new adapter is added.
+
+I will add notes and answer questions in this doc as they arise.
